@@ -36,7 +36,7 @@ gbru = InlineKeyboardButton(text="⬅️Вернуться", callback_data="gbac
 async def welcome(message: types.Message):
 
     cur.execute('''SELECT lang FROM Users WHERE id = ?''', (message.from_user.id,))
-    lang = cur.fetchone()
+    lang = cur.fetchone()[0]
 
     if lang == "eng":
         await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot \nWhat's up? \nFor starters type /help")
@@ -47,7 +47,7 @@ async def welcome(message: types.Message):
     else:
         await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot \nWhat's up? \nFor starters /help")
 
-    cur.execute('''INSERT INTO Users (id,name, lastName)
+    cur.execute('''INSERT OR IGNORE INTO Users (id,name, lastName)
         VALUES (?,?,?)''',(message.from_user.id, message.from_user.first_name, message.from_user.last_name))
     conn.commit()
 # LANG COMMAND
@@ -68,7 +68,7 @@ async def changeLang(call: types.CallbackQuery):
         await call.message.delete()
         await call.message.answer("Договорились!")
 
-    cur.execute('''INSERT INTO Users (id, name, lastName, lang)
+    cur.execute('''INSERT OR REPLACE INTO Users (id, name, lastName, lang)
         VALUES (?,?,?,?)''', (call.from_user.id,call.from_user.first_name, call.from_user.last_name, call.data))
     conn.commit()
 
@@ -86,7 +86,8 @@ async def about(message: types.Message):
 def responses(command, id):
 
     cur.execute('''SELECT lang FROM Users WHERE id = ?''',(id,))
-    lang = cur.fetchone()
+    lang = cur.fetchone()[0]
+    print(lang)
 
     if str(command) == "help_command":
         if lang == "eng":
