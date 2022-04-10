@@ -1,18 +1,18 @@
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-import sqlite3
+#import sqlite3
 
-conn = sqlite3.connect("users.sqlite")
-cur = conn.cursor()
+#conn = sqlite3.connect("users.sqlite")
+#cur = conn.cursor()
 
-cur.execute('''CREATE TABLE IF NOT EXISTS Users (
+'''cur.execute(CREATE TABLE IF NOT EXISTS Users (
     id INTEGER NOT NULL PRIMARY KEY UNIQUE,
     name TEXT,
     lastName TEXT,
     lang
-)''')
+))'''
 
-conn.commit()
+#conn.commit()
 
 # SETTING UP THE BOT
 API_TOKEN = '5108593896:AAFrhYyfeqXLolGlyzOqNgxysSJwfg578-0'
@@ -35,8 +35,7 @@ gbru = InlineKeyboardButton(text="⬅️Вернуться", callback_data="gbac
 # START COMMAND
 @dp.message_handler(commands=["start"])
 async def welcome(message: types.Message):
-    cur.execute('''SELECT lang FROM Users WHERE id = ?''',(id,))
-    lang = cur.fetchone()[0]
+    lang = "eng"
 
     if lang == "eng":
         await message.answer(f"Hello {message.from_user.first_name}!\n I'm Your English Bro Bot \nWhat's up? \nFor starters type \help")
@@ -80,8 +79,8 @@ async def about(message: types.Message):
 
 
 def responses(command, id):
-    cur.execute('''SELECT lang FROM Users WHERE id = ?''',(id,))
-    lang = cur.fetchone()[0]
+    #cur.execute('''SELECT lang FROM Users WHERE id = ?''',(id,))
+    lang = "eng"
 
     if str(command) == "help_command":
         if lang == "eng":
