@@ -2,6 +2,7 @@ from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import sqlite3
 
+# SETTING UP DATABASES
 conn = sqlite3.connect("users.sqlite")
 cur = conn.cursor()
 
@@ -11,8 +12,14 @@ cur.execute('''CREATE TABLE IF NOT EXISTS Users (
     lastName TEXT,
     lang
 )''')
-
 conn.commit()
+
+
+# PRE-BUILT INPUTS
+hi_eng = ["hi", "hello", "what's up?", "what is up", "what's up", "what is up?", "hello there", "sup", "whassup", "wha sup", "hi there", "hey"]
+hi_ukr = ["привіт", "хей", "добрий день"]
+hi_ru = ["привет", "хей", "хай", "добрый день"]
+
 # SETTING UP THE BOT
 API_TOKEN = '5108593896:AAFrhYyfeqXLolGlyzOqNgxysSJwfg578-0'
 bot = Bot(token=API_TOKEN)
@@ -85,9 +92,12 @@ async def welcome(message: types.Message):
 async def about(message: types.Message):
     await message.answer(responses("about_command",message.from_user.id))
 
+# MANAGING REGULAR MESSAGES
+@dp.message_handler()
+async def messages(message: types.Message):
+    await message.answer(responses(message.text, message.from_user.id))
 
 def responses(command, id):
-
     cur.execute('''SELECT lang FROM Users WHERE id = ?''',(id,))
     lang = cur.fetchone()[0]
     print(lang)
@@ -96,9 +106,9 @@ def responses(command, id):
         if lang == "eng":
             return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n------------------- \nIf this is not something you're looking for, please contact the teacher directly: +380 95 177 5440"
         elif lang == "ukr":
-            return "Це список усіх команд: \n/start - Запустити бота \n/about - Познайомитися з викладачем краще \n/lang - Виберіть свою мову \n/cotact - Зв'яжіться з викладачем \n/допомога - Отримайте список усіх команд \n------------------- \nЯкщо це не те, що ви шукаєте, зверніться безпосередньо до викладача: +380 95 177 5440"
+            return "Це список усіх команд: \n/start - Запустити бота \n/about - Дізнатися більше про вчителя \n/lang - Виберіть свою мову \n/cotact - Зв'яжіться з викладачем \n/help - Отримайте список усіх команд \n------------------- \nЯкщо це не те, що ви шукаєте, зверніться безпосередньо до викладача: +380 95 177 5440"
         elif lang == "ru":
-            return "Это список всех команд: \n/start - Запустить бота \n/about - Познакомиться с учителем поближе \n/lang - Выбрать язык \n/cotact - Связаться с учителем \n/help - Получить список всех команд \n------------------- \nЕсли это не то, что вы ищете, свяжитесь напрямую с учителем: +380 95 177 5440"
+            return "Это список всех команд: \n/start - Запустить бота \n/about - Узнать больше про учителя \n/lang - Выбрать язык \n/cotact - Связаться с учителем \n/help - Получить список всех команд \n------------------- \nЕсли это не то, что вы ищете, свяжитесь напрямую с учителем: +380 95 177 5440"
         else:
             return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n------------------- \nIf this is not something you're looking for, please contact the teacher directly: +380 95 177 5440"
 
@@ -146,6 +156,22 @@ I have BBA and MBA, so I know something about business as well as economics 💵
 I have worked as a farmer, a manager, a translator, a trainer, had my own company, but my real passion has always been teaching.
 
 My big goal is to teach as many people as I can to make Ukraine an English speaking country'''
+
+    if str(command).lower() in hi_eng:
+        return "Hello there!"
+    elif str(command).lower() in hi_ukr:
+        return "Привіт!"
+    elif str(command).lower() in hi_ru:
+        return 'Привет!'
+    else:
+        if lang == "eng":
+            return "I'm sorry... I don't understand what you mean :("
+        elif lang == "ukr":
+            return "Вибачте... я не розумію що ви маєте на увазі :("
+        elif lang == "ru":
+            return "Извините... я не понимаю, что вы имеете ввиду :("
+        else:
+            return "I'm sorry... I don't understand what you mean :("
 
 
 if __name__ == "__main__":
