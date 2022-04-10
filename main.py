@@ -35,8 +35,12 @@ gbru = InlineKeyboardButton(text="⬅️Вернуться", callback_data="gbac
 @dp.message_handler(commands=["start"])
 async def welcome(message: types.Message):
 
-    cur.execute('''SELECT lang FROM Users WHERE id = ?''', (message.from_user.id,))
-    lang = cur.fetchone()[0]
+    try:
+        cur.execute('''SELECT lang FROM Users WHERE id = ?''', (message.from_user.id,))
+        global lang
+        lang = cur.fetchone()[0]
+    except:
+        await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot \nWhat's up? \nFor starters /help")
 
     if lang == "eng":
         await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot \nWhat's up? \nFor starters type /help")
@@ -44,8 +48,7 @@ async def welcome(message: types.Message):
         await message.answer(f"Привіт {message.from_user.first_name}\nЯ твій English Bro Bot \Як ся маєш? \nДля початку введіть /help")
     elif lang == "ru":
         await message.answer(f"Привет {message.from_user.first_name}!\nЯ твой English Bro Bot \nКак дела? \nДля начала нажми /help")
-    else:
-        await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot \nWhat's up? \nFor starters /help")
+
 
     cur.execute('''INSERT OR IGNORE INTO Users (id,name, lastName)
         VALUES (?,?,?)''',(message.from_user.id, message.from_user.first_name, message.from_user.last_name))
