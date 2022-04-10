@@ -13,7 +13,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 ))'''
 
 #conn.commit()
-
+print("works")
 # SETTING UP THE BOT
 API_TOKEN = '5108593896:AAFrhYyfeqXLolGlyzOqNgxysSJwfg578-0'
 bot = Bot(token=API_TOKEN)
