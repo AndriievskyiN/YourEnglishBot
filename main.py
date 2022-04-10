@@ -13,7 +13,6 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 ))'''
 
 #conn.commit()
-
 # SETTING UP THE BOT
 API_TOKEN = '5108593896:AAFrhYyfeqXLolGlyzOqNgxysSJwfg578-0'
 bot = Bot(token=API_TOKEN)
@@ -38,13 +37,13 @@ async def welcome(message: types.Message):
     lang = "eng"
 
     if lang == "eng":
-        await message.answer(f"Hello {message.from_user.first_name}!\n I'm Your English Bro Bot \nWhat's up? \nFor starters type \help")
+        await message.answer(f"Hello {message.from_user.first_name}!\n I'm Your English Bro Bot \nWhat's up? \nFor starters type /help")
     elif lang == "ukr":
-        await message.answer(f"Привіт {message.from_user.first_name}\n Я твій English Bro Bot \Як ся маєш? \nДля початку введіть \help")
+        await message.answer(f"Привіт {message.from_user.first_name}\n Я твій English Bro Bot \Як ся маєш? \nДля початку введіть /help")
     elif lang == "ru":
-        await message.answer(f"Привет {message.from_user.first_name}!\n Я твой English Bro Bot \nКак дела? \nДля начала нажми \help")
+        await message.answer(f"Привет {message.from_user.first_name}!\n Я твой English Bro Bot \nКак дела? \nДля начала нажми /help")
     else:
-        await message.answer(f"Hello {message.from_user.first_name}!\n I'm Your English Bro Bot \nWhat's up? \nFor starters \help")
+        await message.answer(f"Hello {message.from_user.first_name}!\n I'm Your English Bro Bot \nWhat's up? \nFor starters /help")
 
 # LANG COMMAND
 @dp.message_handler(commands=["lang"])
@@ -55,16 +54,16 @@ async def lang(message: types.Message):
 @dp.callback_query_handler(text=["eng", "urk", "ru"])
 async def changeLang(call: types.CallbackQuery):
     if call.data == "eng":
-        await call.answer("Agreed!")
+        await call.message.answer("Agreed!")
         await call.message.delete()
     elif call.data == "ukr":
-        await call.answer("Домовились!")
+        await call.message.answer("Домовились!")
         await call.message.delete()
     elif call.data == "ru":
-        await call.answer("Договорились!")
+        await call.message.answer("Договорились!")
         await call.message.delete()
     else:
-        await call.answer("Agreed!")
+        await call.message.answer("Agreed!")
         await call.message.delete()
 
 # HELP COMMAND
@@ -91,6 +90,9 @@ def responses(command, id):
             return "Это список всех команд: \n/start - Запустить бота \n/about - Познакомиться с учителем поближе \n/lang - Выбрать язык \n/cotact - Связаться с учителем \n/help - Получить список всех команд \n------------------- \nЕсли это не то, что вы ищете, свяжитесь напрямую с учителем: +380 95 177 5440"
         else:
             return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n------------------- \nIf this is not something you're looking for, please contact the teacher directly: +380 95 177 5440"
+
+    if str(command) == "lang_command":
+        return "Select your language"
 
     if str(command) == "about_command":
         if lang == "eng":
