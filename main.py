@@ -92,6 +92,9 @@ def responses(command, id):
         else:
             return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n------------------- \nIf this is not something you're looking for, please contact the teacher directly: +380 95 177 5440"
 
+    if str(command) == "lang_command":
+        return "Select your language"
+
     if str(command) == "about_command":
         if lang == "eng":
             return '''My name is Viacheslav aka Your English Bro 😎 
