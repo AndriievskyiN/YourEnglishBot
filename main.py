@@ -35,17 +35,17 @@ gbru = InlineKeyboardButton(text="⬅️Вернуться", callback_data="gbac
 @dp.message_handler(commands=["start"])
 async def welcome(message: types.Message):
 
-    cur.execute('''SELECT lang FROM Users WHERE id = ?''', (message.from_user.id))
+    cur.execute('''SELECT lang FROM Users WHERE id = ?''', (message.from_user.id,))
     lang = cur.fetchone()
 
     if lang == "eng":
-        await message.answer(f"Hello {message.from_user.first_name}!\n I'm Your English Bro Bot \nWhat's up? \nFor starters type /help")
+        await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot \nWhat's up? \nFor starters type /help")
     elif lang == "ukr":
-        await message.answer(f"Привіт {message.from_user.first_name}\n Я твій English Bro Bot \Як ся маєш? \nДля початку введіть /help")
+        await message.answer(f"Привіт {message.from_user.first_name}\nЯ твій English Bro Bot \Як ся маєш? \nДля початку введіть /help")
     elif lang == "ru":
-        await message.answer(f"Привет {message.from_user.first_name}!\n Я твой English Bro Bot \nКак дела? \nДля начала нажми /help")
+        await message.answer(f"Привет {message.from_user.first_name}!\nЯ твой English Bro Bot \nКак дела? \nДля начала нажми /help")
     else:
-        await message.answer(f"Hello {message.from_user.first_name}!\n I'm Your English Bro Bot \nWhat's up? \nFor starters /help")
+        await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot \nWhat's up? \nFor starters /help")
 # LANG COMMAND
 @dp.message_handler(commands=["lang"])
 async def lang(message: types.Message):
