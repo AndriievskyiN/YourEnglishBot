@@ -54,16 +54,16 @@ async def lang(message: types.Message):
 @dp.callback_query_handler(text=["eng", "urk", "ru"])
 async def changeLang(call: types.CallbackQuery):
     if call.data == "eng":
-        await call.answer("Agreed!")
+        await call.message.answer("Agreed!")
         await call.message.delete()
     elif call.data == "ukr":
-        await call.answer("Домовились!")
+        await call.message.answer("Домовились!")
         await call.message.delete()
     elif call.data == "ru":
-        await call.answer("Договорились!")
+        await call.message.answer("Договорились!")
         await call.message.delete()
     else:
-        await call.answer("Agreed!")
+        await call.message.answer("Agreed!")
         await call.message.delete()
 
 # HELP COMMAND
