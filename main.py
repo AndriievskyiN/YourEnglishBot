@@ -46,6 +46,10 @@ async def welcome(message: types.Message):
         await message.answer(f"Привет {message.from_user.first_name}!\nЯ твой English Bro Bot \nКак дела? \nДля начала нажми /help")
     else:
         await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot \nWhat's up? \nFor starters /help")
+
+    cur.execute('''INSERT INTO Users (id,name, lastName)
+        VALUES (?,?,?)''',(message.from_user.id, message.from_user.first_name, message.from_user.last_name))
+    conn.commit()
 # LANG COMMAND
 @dp.message_handler(commands=["lang"])
 async def lang(message: types.Message):
@@ -63,9 +67,10 @@ async def changeLang(call: types.CallbackQuery):
     elif call.data == "ru":
         await call.message.delete()
         await call.message.answer("Договорились!")
-    else:
-        await call.message.delete()
-        await call.message.answer("Agreed!")
+
+    cur.execute('''INSERT INTO Users (id, name, lastName, lang)
+        VALUES (?,?,?,?)''', (call.from_user.id,call.from_user.first_name, call.from_user.last_name, call.data))
+    conn.commit()
 
 # HELP COMMAND
 @dp.message_handler(commands=["help"])
