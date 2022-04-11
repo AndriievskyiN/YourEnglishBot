@@ -60,6 +60,7 @@ async def welcome(message: types.Message):
     cur.execute('''INSERT OR IGNORE INTO Users (id,name, lastName)
         VALUES (?,?,?)''',(message.from_user.id, message.from_user.first_name, message.from_user.last_name))
     conn.commit()
+
 # LANG COMMAND
 @dp.message_handler(commands=["lang"])
 async def lang(message: types.Message):
@@ -96,6 +97,11 @@ async def about(message: types.Message):
 @dp.message_handler(commands=["contact"])
 async def contact(message: types.Message):
     await message.answer(responses("contact_command", message.from_user.id))
+
+# CANCEL COMMAND
+@dp.message_handler(commands=["cancel"])
+async def cancel(message: types.Message):
+    await message.answer(responses("cancel_command", message.from_user.id))
 
 # MANAGING REGULAR MESSAGES
 @dp.message_handler()
@@ -135,6 +141,16 @@ def responses(command, id):
             return "Instagram: https://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \nНомер телефону: +380 95 177 5440"
         elif lang == "ru":
             return "Instagram: https://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \nНомер телефона: +380 95 177 5440"
+
+    if str(command) == "cancel_command":
+        if lang == "eng":
+            return "If you want to cancel a class, please contact the teacher directly: \n+380 95 177 5440"
+        elif lang == "ukr":
+            return "Якщо ты хочеш скасувати урок, звернись безпосередньо до вчителя: \n+380 95 177 5440"
+        elif lang == "ru":
+            return "Если ты хочешь отменить занятие, свяжись с учителем напрямую: \n+380 95 177 5440"
+        else:
+            return "If you want to cancel a class, please contact the teacher directly: \n+380 95 177 5440"
 
     if str(command) == "about_command":
         if lang == "eng":
