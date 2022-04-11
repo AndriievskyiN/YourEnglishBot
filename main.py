@@ -52,7 +52,7 @@ async def welcome(message: types.Message):
     if lang == "eng":
         await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot \nWhat's up? \nFor starters type /help")
     elif lang == "ukr":
-        await message.answer(f"Привіт {message.from_user.first_name}\nЯ твій English Bro Bot \Як ся маєш? \nДля початку введіть /help")
+        await message.answer(f"Привіт {message.from_user.first_name}\nЯ твій English Bro Bot \Як ся маєш? \nДля початку введи /help")
     elif lang == "ru":
         await message.answer(f"Привет {message.from_user.first_name}!\nЯ твой English Bro Bot \nКак дела? \nДля начала нажми /help")
 
@@ -104,13 +104,13 @@ def responses(command, id):
 
     if str(command) == "help_command":
         if lang == "eng":
-            return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n------------------- \nIf this is not something you're looking for, please contact the teacher directly: +380 95 177 5440"
+            return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n-------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n+380 95 177 5440"
         elif lang == "ukr":
-            return "Це список усіх команд: \n/start - Запустити бота \n/about - Дізнатися більше про вчителя \n/lang - Виберіть свою мову \n/cotact - Зв'яжіться з викладачем \n/help - Отримайте список усіх команд \n------------------- \nЯкщо це не те, що ви шукаєте, зверніться безпосередньо до викладача: +380 95 177 5440"
+            return "Це список усіх команд: \n/start - Запустити бота \n/about - Дізнатися більше про вчителя \n/lang - Виберіть свою мову \n/cotact - Зв'яжіться з викладачем \n/help - Отримайте список усіх команд \n-------------------------------------- \nЯкщо це не те, що ти шукаєш, звернись безпосередньо до вчителя: \n+380 95 177 5440"
         elif lang == "ru":
-            return "Это список всех команд: \n/start - Запустить бота \n/about - Узнать больше про учителя \n/lang - Выбрать язык \n/cotact - Связаться с учителем \n/help - Получить список всех команд \n------------------- \nЕсли это не то, что вы ищете, свяжитесь напрямую с учителем: +380 95 177 5440"
+            return "Это список всех команд: \n/start - Запустить бота \n/about - Узнать больше про учителя \n/lang - Выбрать язык \n/cotact - Связаться с учителем \n/help - Получить список всех команд \n-------------------------------------- \nЕсли это не то, что ты ищешь, свяжись напрямую с учителем: \n+380 95 177 5440"
         else:
-            return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n------------------- \nIf this is not something you're looking for, please contact the teacher directly: +380 95 177 5440"
+            return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n-------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n+380 95 177 5440"
 
     if str(command) == "lang_command":
         return "Select your language"
