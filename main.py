@@ -47,14 +47,14 @@ async def welcome(message: types.Message):
         global lang
         lang = cur.fetchone()[0]
     except:
-        await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot \nWhat's up? \nFor starters /help")
+        await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters /help")
 
     if lang == "eng":
-        await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot \nWhat's up? \nFor starters type /help")
+        await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters type /help")
     elif lang == "ukr":
-        await message.answer(f"Привіт {message.from_user.first_name}\nЯ твій English Bro Bot \nЯк ся маєш? \nДля початку введи /help")
+        await message.answer(f"Привіт {message.from_user.first_name}!\nЯ твій English Bro Bot 🤖 \nЯк ся маєш? \nДля початку введи /help")
     elif lang == "ru":
-        await message.answer(f"Привет {message.from_user.first_name}!\nЯ твой English Bro Bot \nКак дела? \nДля начала нажми /help")
+        await message.answer(f"Привет {message.from_user.first_name}!\nЯ твой English Bro Bot 🤖\nКак дела? \nДля начала нажми /help")
 
 
     cur.execute('''INSERT OR IGNORE INTO Users (id,name, lastName)
@@ -92,6 +92,11 @@ async def welcome(message: types.Message):
 async def about(message: types.Message):
     await message.answer(responses("about_command",message.from_user.id))
 
+# CONTACT COMMAND
+@dp.message_handler(commands=["contact"])
+async def contact(message: types.Message):
+    await message.answer(responses("contact_command", message.from_user.id))
+
 # MANAGING REGULAR MESSAGES
 @dp.message_handler()
 async def messages(message: types.Message):
@@ -106,14 +111,30 @@ def responses(command, id):
         if lang == "eng":
             return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n-------------------------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n+380 95 177 5440"
         elif lang == "ukr":
-            return "Це список усіх команд: \n/start - Запустити бота \n/about - Дізнатися більше про вчителя \n/lang - Вибери свою мову \n/cotact - Зв'яжись з вчителем \n/help - Отримай список усіх команд \n-------------------------------------------------------- \nЯкщо це не те, що ти шукаєш, звернись безпосередньо до вчителя: \n+380 95 177 5440"
+            return "Це список усіх команд: \n/start - Запустити бота \n/about - Дізнатися більше про вчителя \n/lang - Вибери свою мову \n/contact - Зв'яжись з вчителем \n/help - Отримай список усіх команд \n-------------------------------------------------------- \nЯкщо це не те, що ти шукаєш, звернись безпосередньо до вчителя: \n+380 95 177 5440"
         elif lang == "ru":
-            return "Это список всех команд: \n/start - Запустить бота \n/about - Узнать больше про учителя \n/lang - Выбрать язык \n/cotact - Связаться с учителем \n/help - Получить список всех команд \n-------------------------------------------------------- \nЕсли это не то, что ты ищешь, свяжись напрямую с учителем: \n+380 95 177 5440"
+            return "Это список всех команд: \n/start - Запустить бота \n/about - Узнать больше про учителя \n/lang - Выбрать язык \n/contact - Связаться с учителем \n/help - Получить список всех команд \n-------------------------------------------------------- \nЕсли это не то, что ты ищешь, свяжись напрямую с учителем: \n+380 95 177 5440"
         else:
             return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n-------------------------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n+380 95 177 5440"
 
     if str(command) == "lang_command":
-        return "Select your language"
+        if lang == "eng":
+            return "Select your language"
+        elif lang == "ukr":
+            return "Вибери свою мову"
+        elif lang == "ru":
+            return "Выбери свой язык"
+        else:
+            return "Select your language"
+
+
+    if str(command) == "contact_command":
+        if lang == "eng":
+            return "Instagram: https://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \nPhone number: +380 95 177 5440"
+        elif lang == "ukr":
+            return "Instagram: https://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \nНомер телефону: +380 95 177 5440"
+        elif lang == "ru":
+            return "Instagram: https://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \nНомер телефона: +380 95 177 5440"
 
     if str(command) == "about_command":
         if lang == "eng":
