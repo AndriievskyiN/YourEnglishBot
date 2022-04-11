@@ -37,6 +37,24 @@ gbeng = InlineKeyboardButton(text="⬅️Go Back", callback_data="gback")
 gbukr = InlineKeyboardButton(text="⬅️Повернутися", callback_data="gback")
 gbru = InlineKeyboardButton(text="⬅️Вернуться", callback_data="gback")
 
+# BOOK COMMAND BUTTONS
+indeng = InlineKeyboardButton(text="Individual Class", callback_data="ind")
+groupeng = InlineKeyboardButton(text="Group class", callback_data="group")
+speakingeng = InlineKeyboardButton(text="Speaking class", callback_data="speaking")
+optionseng = InlineKeyboardMarkup().add(indeng).add(groupeng).add(speakingeng).add(gbeng)
+
+indukr = InlineKeyboardButton(text="Індивідуальний урок", callback_data="ind")
+groupukr = InlineKeyboardButton(text="Груповий урок", callback_data="group")
+speakingukr = InlineKeyboardButton(text='"Speaking" урок', callback_data="speaking")
+optionsukr = InlineKeyboardMarkup().add(indukr).add(groupukr).add(speakingukr).add(gbukr)
+
+indru = InlineKeyboardButton(text="Индивидуальный урок", callback_data="ind")
+groupru = InlineKeyboardButton(text="Групповой урок", callback_data="group")
+speakingru = InlineKeyboardButton(text='"Speaking" урок', callback_data="speaking")
+optionsru = InlineKeyboardMarkup().add(indru).add(groupru).add(speakingru).add(gbru)
+
+
+
 
 # START COMMAND
 @dp.message_handler(commands=["start"])
@@ -98,6 +116,26 @@ async def about(message: types.Message):
 async def contact(message: types.Message):
     await message.answer(responses("contact_command", message.from_user.id))
 
+# BOOK COMMAND
+@dp.message_handler(commands=["book"])
+async def book(message: types.Message):
+    await message.answer(responses("book_command", message.from_user.id),reply_markup=optionsKeyboard(message.from_user.id))
+
+# MANAGING BOOK OPTIONS
+@dp.message_handler(text=["gback","ind","group","speaking"])
+async def manage_options(call: types.CallbackQuery):
+    if call.data == "gback":
+        await call.message.delete()
+    elif call.data == "ind":
+        await call.message.delete()
+        await call.message.answer(responses("ind_classes", call.from_user.id))
+    elif call.data == "group":
+        await call.message.delete()
+        await call.message.answer(responses("group_classes", call.from_user.id))
+    elif call.data == "speaking":
+        await call.message.delete()
+        await call.message.answer(responses("speaking_classes", call.from_user.id))
+
 # CANCEL COMMAND
 @dp.message_handler(commands=["cancel"])
 async def cancel(message: types.Message):
@@ -123,7 +161,7 @@ def responses(command, id):
         else:
             return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n-------------------------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n+380 95 177 5440"
 
-    if str(command) == "lang_command":
+    elif str(command) == "lang_command":
         if lang == "eng":
             return "Select your language"
         elif lang == "ukr":
@@ -134,7 +172,7 @@ def responses(command, id):
             return "Select your language"
 
 
-    if str(command) == "contact_command":
+    elif str(command) == "contact_command":
         if lang == "eng":
             return "Instagram: https://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \nPhone number: +380 95 177 5440"
         elif lang == "ukr":
@@ -142,7 +180,7 @@ def responses(command, id):
         elif lang == "ru":
             return "Instagram: https://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \nНомер телефона: +380 95 177 5440"
 
-    if str(command) == "cancel_command":
+    elif str(command) == "cancel_command":
         if lang == "eng":
             return "If you want to cancel a class, please contact the teacher directly: \n+380 95 177 5440"
         elif lang == "ukr":
@@ -152,7 +190,49 @@ def responses(command, id):
         else:
             return "If you want to cancel a class, please contact the teacher directly: \n+380 95 177 5440"
 
-    if str(command) == "about_command":
+
+    elif str(command) == "book_command":
+        if lang == "eng":
+            return "These are the options you can choose from"
+        elif lang == "ukr":
+            return "Це варіанти, які ти можеш вибрати"
+        elif lang == "ru":
+            return "Это варианты, которые ты можешь выбрать"
+        else:
+            return "These are the options you can choose from"
+
+    elif str(command) == "ind_classes":
+        if lang == "eng":
+            return "To book an individual class, please contact the teacher directly via Telegram, phone call, or Instagram \n/contact"
+        elif lang == "ukr":
+            return "Щоб забронювати індивідуальний урок, зв’яжись з вчителем безпосередньо через Telegram, телефонний дзвінок або Instagram \n/contact"
+        elif lang == "ru":
+            return "Чтобы записаться на индивидуальный урок, свяжись с учителем напрямую в Telegram, по телефону или в Instagram \n/contact"
+        else: 
+            return "To book an individual class, please contact the teacher directly via Telegram, phone call, or Instagram \n/contact"
+
+    elif str(command) == "group_classes":
+        if lang == "eng":
+            return "I'm sorry... This command doesn't work for now :("
+        elif lang == "ukr":
+            return "Вибачте... Ця команда зараз не працює :("
+        elif lang == "ru":
+            return "Извините... Эта команда пока не работает :("
+        else: 
+            return "I'm sorry... This command doesn't work for now :("
+
+    elif str(command) == "speaking_classes":
+        if lang == "eng":
+            return "If you want to attend a speaking class, join this group for further information: \nhttps://t.me/your_english_bro"
+        elif lang == "ukr":
+            return "Якщо ти хочеш відвідати speaking урок, зоходь до цієї групи, щоб отримати додаткову інформацію: \nhttps://t.me/your_english_bro"
+        elif lang == "ru":
+            return "Если ты хочешь посетить speaking урок, заходи в эту группу для дополнительной информации: \nhttps://t.me/your_english_bro"
+        else: 
+            return "If you want to attend a speaking class, join this group for further information: \nhttps://t.me/your_english_bro"
+
+    
+    elif str(command) == "about_command":
         if lang == "eng":
             return '''My name is Viacheslav aka Your English Bro 😎 
 
@@ -193,23 +273,35 @@ I have BBA and MBA, so I know something about business as well as economics 💵
 I have worked as a farmer, a manager, a translator, a trainer, had my own company, but my real passion has always been teaching.
 
 My big goal is to teach as many people as I can to make Ukraine an English speaking country'''
-
-    if str(command).lower() in hi_eng:
-        return "Hello there!"
-    elif str(command).lower() in hi_ukr:
-        return "Привіт!"
-    elif str(command).lower() in hi_ru:
-        return 'Привет!'
     else:
-        if lang == "eng":
-            return "I'm sorry... I don't understand what you mean :("
-        elif lang == "ukr":
-            return "Вибачте... я не розумію що ви маєте на увазі :("
-        elif lang == "ru":
-            return "Извините... я не понимаю, что вы имеете ввиду :("
+        if str(command).lower() in hi_eng:
+            return "Hello there!"
+        elif str(command).lower() in hi_ukr:
+            return "Привіт!"
+        elif str(command).lower() in hi_ru:
+            return 'Привет!'
         else:
-            return "I'm sorry... I don't understand what you mean :("
+            if lang == "eng":
+                return "I'm sorry... I don't understand what you mean :("
+            elif lang == "ukr":
+                return "Вибачте... я не розумію що ви маєте на увазі :("
+            elif lang == "ru":
+                return "Извините... я не понимаю, что вы имеете ввиду :("
+            else:
+                return "I'm sorry... I don't understand what you mean :("
 
+def optionsKeyboard(id):
+    cur.execute('''SELECT lang FROM Users WHERE id = ?''', (id,))
+    lang = cur.fetchone()[0]
+
+    if lang == "eng":
+        return optionseng
+    elif lang == "ukr":
+        return optionsukr
+    elif lang == "ru":
+        return optionsru
+    else:
+        return optionseng
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
