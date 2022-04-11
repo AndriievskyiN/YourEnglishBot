@@ -122,7 +122,7 @@ async def book(message: types.Message):
     await message.answer(responses("book_command", message.from_user.id),reply_markup=optionsKeyboard(message.from_user.id))
 
 # MANAGING BOOK OPTIONS
-@dp.message_handler(text=["gback","ind","group","speaking"])
+@dp.callback_query_handler(text=["gback","ind","group","speaking"])
 async def manage_options(call: types.CallbackQuery):
     if call.data == "gback":
         await call.message.delete()
@@ -149,17 +149,16 @@ async def messages(message: types.Message):
 def responses(command, id):
     cur.execute('''SELECT lang FROM Users WHERE id = ?''',(id,))
     lang = cur.fetchone()[0]
-    print(lang)
 
     if str(command) == "help_command":
         if lang == "eng":
-            return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n-------------------------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n+380 95 177 5440"
+            return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n------------------------------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n+380951775440"
         elif lang == "ukr":
-            return "Це список усіх команд: \n/start - Запустити бота \n/about - Дізнатися більше про вчителя \n/lang - Вибери свою мову \n/contact - Зв'яжись з вчителем \n/help - Отримай список усіх команд \n-------------------------------------------------------- \nЯкщо це не те, що ти шукаєш, звернись безпосередньо до вчителя: \n+380 95 177 5440"
+            return "Це список усіх команд: \n/start - Запустити бота \n/about - Дізнатися більше про вчителя \n/lang - Вибери свою мову \n/contact - Зв'яжись з вчителем \n/help - Отримай список усіх команд \n------------------------------------------------------------- \nЯкщо це не те, що ти шукаєш, звернись безпосередньо до вчителя: \n+380951775440"
         elif lang == "ru":
-            return "Это список всех команд: \n/start - Запустить бота \n/about - Узнать больше про учителя \n/lang - Выбрать язык \n/contact - Связаться с учителем \n/help - Получить список всех команд \n-------------------------------------------------------- \nЕсли это не то, что ты ищешь, свяжись напрямую с учителем: \n+380 95 177 5440"
+            return "Это список всех команд: \n/start - Запустить бота \n/about - Узнать больше про учителя \n/lang - Выбрать язык \n/contact - Связаться с учителем \n/help - Получить список всех команд \n-------------------------------------------------------------- \nЕсли это не то, что ты ищешь, свяжись напрямую с учителем: \n+380951775440"
         else:
-            return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n-------------------------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n+380 95 177 5440"
+            return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n-------------------------------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n+380951775440"
 
     elif str(command) == "lang_command":
         if lang == "eng":
@@ -174,21 +173,23 @@ def responses(command, id):
 
     elif str(command) == "contact_command":
         if lang == "eng":
-            return "Instagram: https://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \nPhone number: +380 95 177 5440"
+            return "📷Instagram: \nhttps://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \n------------------------------------------------------------- \n📞Phone number: +380951775440"
         elif lang == "ukr":
-            return "Instagram: https://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \nНомер телефону: +380 95 177 5440"
+            return "📷Instagram: \nhttps://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \n------------------------------------------------------------- \n📞Номер телефону: +380951775440"
         elif lang == "ru":
-            return "Instagram: https://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \nНомер телефона: +380 95 177 5440"
+            return "📷Instagram: \nhttps://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \n------------------------------------------------------------- \n📞Номер телефона: +380951775440"
+        else:
+            return "📷Instagram: \nhttps://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \n------------------------------------------------------------- \n📞Phone number: +380951775440"
 
     elif str(command) == "cancel_command":
         if lang == "eng":
-            return "If you want to cancel a class, please contact the teacher directly: \n+380 95 177 5440"
+            return "If you want to cancel a class, please contact the teacher directly: \n+380951775440"
         elif lang == "ukr":
-            return "Якщо ты хочеш скасувати урок, звернись безпосередньо до вчителя: \n+380 95 177 5440"
+            return "Якщо ты хочеш скасувати урок, звернись безпосередньо до вчителя: \n+380951775440"
         elif lang == "ru":
-            return "Если ты хочешь отменить занятие, свяжись с учителем напрямую: \n+380 95 177 5440"
+            return "Если ты хочешь отменить занятие, свяжись с учителем напрямую: \n+380951775440"
         else:
-            return "If you want to cancel a class, please contact the teacher directly: \n+380 95 177 5440"
+            return "If you want to cancel a class, please contact the teacher directly: \n+380951775440"
 
 
     elif str(command) == "book_command":
