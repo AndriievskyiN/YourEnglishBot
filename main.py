@@ -2,6 +2,8 @@ from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import sqlite3
 
+from telegram import ReplyKeyboardMarkup
+
 # SETTING UP DATABASES
 conn = sqlite3.connect("users.sqlite")
 cur = conn.cursor()
@@ -40,18 +42,21 @@ gbru = InlineKeyboardButton(text="⬅️Вернуться", callback_data="gbac
 # BOOK COMMAND BUTTONS
 indeng = InlineKeyboardButton(text="🙋‍♂️Individual Class", callback_data="ind")
 groupeng = InlineKeyboardButton(text="👨‍👩‍👧‍👦Group class", callback_data="group")
+minigroupeng = InlineKeyboardButton(text="👨‍👩‍👧‍👦Mini Group class", callback_data="mini-group")
 speakingeng = InlineKeyboardButton(text="🗣Speaking class", callback_data="speaking")
-optionseng = InlineKeyboardMarkup().add(indeng).add(groupeng).add(speakingeng).add(gbeng)
+optionseng = InlineKeyboardMarkup().add(indeng).add(groupeng).add(minigroupeng).add(speakingeng).add(gbeng)
 
 indukr = InlineKeyboardButton(text="🙋‍♂️Індивідуальний урок", callback_data="ind")
 groupukr = InlineKeyboardButton(text="👨‍👩‍👧‍👦Груповий урок", callback_data="group")
+minigroupukr = InlineKeyboardButton(text="👨‍👩‍👧‍👦Міні Груповий урок", callback_data="mini-group")
 speakingukr = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="speaking")
-optionsukr = InlineKeyboardMarkup().add(indukr).add(groupukr).add(speakingukr).add(gbukr)
+optionsukr = InlineKeyboardMarkup().add(indukr).add(groupukr).add(minigroupukr).add(speakingukr).add(gbukr)
 
 indru = InlineKeyboardButton(text="🙋‍♂️Индивидуальный урок", callback_data="ind")
 groupru = InlineKeyboardButton(text="👨‍👩‍👧‍👦Групповой урок", callback_data="group")
+minigroupru = InlineKeyboardButton(text="👨‍👩‍👧‍👦Мини Груповий урок", callback_data="mini-group")
 speakingru = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="speaking")
-optionsru = InlineKeyboardMarkup().add(indru).add(groupru).add(speakingru).add(gbru)
+optionsru = InlineKeyboardMarkup().add(indru).add(groupru).add(minigroupru).add(speakingru).add(gbru)
 
 
 
@@ -122,7 +127,7 @@ async def book(message: types.Message):
     await message.answer(responses("book_command", message.from_user.id),reply_markup=optionsKeyboard(message.from_user.id))
 
 # MANAGING BOOK OPTIONS
-@dp.callback_query_handler(text=["gback","ind","group","speaking"])
+@dp.callback_query_handler(text=["gback","ind","group","mini-group","speaking"])
 async def manage_options(call: types.CallbackQuery):
     if call.data == "gback":
         await call.message.delete()
@@ -140,6 +145,29 @@ async def manage_options(call: types.CallbackQuery):
 @dp.message_handler(commands=["cancel"])
 async def cancel(message: types.Message):
     await message.answer(responses("cancel_command", message.from_user.id))
+
+# ABOUT CLASS INFO
+@dp.message_handler(commands=["lessoninfo"])
+async def lessoninfo(message: types.Message):
+    await message.answer(responses("lessoninfo_command", message.from_user.id), reply_markup=optionsKeyboard(message.from_user.id))
+
+# MANAGING CLASS INFO BUTTONS
+@dp.callback_query_handler(text=["gback","ind","group","mini-group","speaking"])
+async def manage_classinfo(call: types.CallbackQuery):
+    if call.data == "gback":
+        await call.message.delete()
+    elif call.data == "ind":
+        await call.message.delete()
+        await call.message.answer(responses("indinfo", call.from_user.id))
+    elif call.data == "group":
+        await call.message.delete()
+        await call.message.answer(responses("groupinfo", call.from_user.id))
+    elif call.data == "mini-group":
+        await call.message.delete()
+        await call.message.answer(responses("mini-groupinfo", call.from_user.id))
+    elif call.data == "speaking":
+        await call.message.delete()
+        await call.message.answer(responses("speakinginfo", call.from_user.id))
 
 # MANAGING REGULAR MESSAGES
 @dp.message_handler()
@@ -221,6 +249,16 @@ def responses(command, id):
             return "Извините... Эта команда пока не работает :("
         else: 
             return "I'm sorry... This command doesn't work for now :("
+
+    elif str(command) == "lessoninfo_command":
+        if lang == "eng":
+            return "Select a lesson you want to know more about"
+        elif lang == "ukr":
+            return "Обери урок, про який хочеш дізнатися більше"
+        elif lang == "ru":
+            return "Выбери урок, о котором хочешь узнать больше"
+        else:
+            return "Select a lesson you want to know more about"
 
     elif str(command) == "speaking_classes":
         if lang == "eng":
