@@ -191,7 +191,7 @@ async def messages(message: types.Message):
 
 def responses(command, id):
     cur.execute('''SELECT lang FROM Users WHERE id = ?''',(id,))
-    lang = cur.fetchone()[0]
+    lang = cur.fetchone()
 
     if str(command) == "help_command":
         if lang == "eng":
