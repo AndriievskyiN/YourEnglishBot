@@ -38,19 +38,19 @@ gbukr = InlineKeyboardButton(text="⬅️Повернутися", callback_data=
 gbru = InlineKeyboardButton(text="⬅️Вернуться", callback_data="gback")
 
 # BOOK COMMAND BUTTONS
-indeng = InlineKeyboardButton(text="Individual Class", callback_data="ind")
-groupeng = InlineKeyboardButton(text="Group class", callback_data="group")
-speakingeng = InlineKeyboardButton(text="Speaking class", callback_data="speaking")
+indeng = InlineKeyboardButton(text="🙋‍♂️Individual Class", callback_data="ind")
+groupeng = InlineKeyboardButton(text="👨‍👩‍👧‍👦Group class", callback_data="group")
+speakingeng = InlineKeyboardButton(text="🗣Speaking class", callback_data="speaking")
 optionseng = InlineKeyboardMarkup().add(indeng).add(groupeng).add(speakingeng).add(gbeng)
 
-indukr = InlineKeyboardButton(text="Індивідуальний урок", callback_data="ind")
-groupukr = InlineKeyboardButton(text="Груповий урок", callback_data="group")
-speakingukr = InlineKeyboardButton(text='"Speaking" урок', callback_data="speaking")
+indukr = InlineKeyboardButton(text="🙋‍♂️Індивідуальний урок", callback_data="ind")
+groupukr = InlineKeyboardButton(text="👨‍👩‍👧‍👦Груповий урок", callback_data="group")
+speakingukr = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="speaking")
 optionsukr = InlineKeyboardMarkup().add(indukr).add(groupukr).add(speakingukr).add(gbukr)
 
-indru = InlineKeyboardButton(text="Индивидуальный урок", callback_data="ind")
-groupru = InlineKeyboardButton(text="Групповой урок", callback_data="group")
-speakingru = InlineKeyboardButton(text='"Speaking" урок', callback_data="speaking")
+indru = InlineKeyboardButton(text="🙋‍♂️Индивидуальный урок", callback_data="ind")
+groupru = InlineKeyboardButton(text="👨‍👩‍👧‍👦Групповой урок", callback_data="group")
+speakingru = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="speaking")
 optionsru = InlineKeyboardMarkup().add(indru).add(groupru).add(speakingru).add(gbru)
 
 
@@ -152,13 +152,13 @@ def responses(command, id):
 
     if str(command) == "help_command":
         if lang == "eng":
-            return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n------------------------------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n+380951775440"
+            return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/book - Book a class \n/cancel Cancel a class \n/help - Get the list of all commands \n------------------------------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n/contact"
         elif lang == "ukr":
-            return "Це список усіх команд: \n/start - Запустити бота \n/about - Дізнатися більше про вчителя \n/lang - Вибери свою мову \n/contact - Зв'яжись з вчителем \n/help - Отримай список усіх команд \n------------------------------------------------------------- \nЯкщо це не те, що ти шукаєш, звернись безпосередньо до вчителя: \n+380951775440"
+            return "Це список усіх команд: \n/start - Запустити бота \n/about - Дізнатися більше про вчителя \n/lang - Вибери свою мову \n/contact - Зв'яжись з вчителем \n/book - Забронювати урок \n/cancel - Скасувати урок \n/help - Отримай список усіх команд \n------------------------------------------------------------- \nЯкщо це не те, що ти шукаєш, звернись безпосередньо до вчителя: \n/contact"
         elif lang == "ru":
-            return "Это список всех команд: \n/start - Запустить бота \n/about - Узнать больше про учителя \n/lang - Выбрать язык \n/contact - Связаться с учителем \n/help - Получить список всех команд \n-------------------------------------------------------------- \nЕсли это не то, что ты ищешь, свяжись напрямую с учителем: \n+380951775440"
+            return "Это список всех команд: \n/start - Запустить бота \n/about - Узнать больше про учителя \n/lang - Выбрать язык \n/contact - Связаться с учителем \n/book - Забронировать урок \n/cancel - Отменить урок \n/help - Получить список всех команд \n-------------------------------------------------------------- \nЕсли это не то, что ты ищешь, свяжись напрямую с учителем: \n/contact"
         else:
-            return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/help - Get the list of all commands \n-------------------------------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n+380951775440"
+            return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/book - Book a class \n/cancel Cancel a class \n/help - Get the list of all commands \n------------------------------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n/contact"
 
     elif str(command) == "lang_command":
         if lang == "eng":
