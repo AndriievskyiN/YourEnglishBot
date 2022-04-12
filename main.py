@@ -1,3 +1,4 @@
+import re
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import sqlite3
@@ -42,35 +43,47 @@ gbru = InlineKeyboardButton(text="⬅️Вернуться", callback_data="gbac
 # BOOK COMMAND BUTTONS
 indeng = InlineKeyboardButton(text="🙋‍♂️Individual Class", callback_data="ind")
 groupeng = InlineKeyboardButton(text="👨‍👩‍👧‍👦Group class", callback_data="group")
-minigroupeng = InlineKeyboardButton(text="👨‍👩‍👧‍👦Mini Group class", callback_data="mini-group")
+minigroupeng = InlineKeyboardButton(text="👬Mini Group class", callback_data="mini-group")
 speakingeng = InlineKeyboardButton(text="🗣Speaking class", callback_data="speaking")
-optionseng = InlineKeyboardMarkup().add(indeng).add(groupeng).add(minigroupeng).add(speakingeng).add(gbeng)
+optionseng = InlineKeyboardMarkup().add(indeng).add(minigroupeng).add(groupeng).add(speakingeng).add(gbeng)
 
 indukr = InlineKeyboardButton(text="🙋‍♂️Індивідуальний урок", callback_data="ind")
 groupukr = InlineKeyboardButton(text="👨‍👩‍👧‍👦Груповий урок", callback_data="group")
-minigroupukr = InlineKeyboardButton(text="👨‍👩‍👧‍👦Міні Груповий урок", callback_data="mini-group")
+minigroupukr = InlineKeyboardButton(text="👬Міні Груповий урок", callback_data="mini-group")
 speakingukr = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="speaking")
-optionsukr = InlineKeyboardMarkup().add(indukr).add(groupukr).add(minigroupukr).add(speakingukr).add(gbukr)
+optionsukr = InlineKeyboardMarkup().add(indukr).add(minigroupukr).add(groupukr).add(speakingukr).add(gbukr)
 
 indru = InlineKeyboardButton(text="🙋‍♂️Индивидуальный урок", callback_data="ind")
 groupru = InlineKeyboardButton(text="👨‍👩‍👧‍👦Групповой урок", callback_data="group")
-minigroupru = InlineKeyboardButton(text="👨‍👩‍👧‍👦Мини Груповий урок", callback_data="mini-group")
+minigroupru = InlineKeyboardButton(text="👬Мини Груповий урок", callback_data="mini-group")
 speakingru = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="speaking")
-optionsru = InlineKeyboardMarkup().add(indru).add(groupru).add(minigroupru).add(speakingru).add(gbru)
+optionsru = InlineKeyboardMarkup().add(indru).add(minigroupru).add(groupru).add(speakingru).add(gbru)
 
+# INFO COMMAND BUTTONS
+indeng = InlineKeyboardButton(text="🙋‍♂️Individual Class", callback_data="ind")
+groupeng = InlineKeyboardButton(text="👨‍👩‍👧‍👦Group class", callback_data="group")
+minigroupeng = InlineKeyboardButton(text="👬Mini Group class", callback_data="mini-group")
+speakingeng = InlineKeyboardButton(text="🗣Speaking class", callback_data="speaking")
+optionseng = InlineKeyboardMarkup().add(indeng).add(minigroupeng).add(groupeng).add(speakingeng).add(gbeng)
 
+indukr = InlineKeyboardButton(text="🙋‍♂️Індивідуальний урок", callback_data="ind")
+groupukr = InlineKeyboardButton(text="👨‍👩‍👧‍👦Груповий урок", callback_data="group")
+minigroupukr = InlineKeyboardButton(text="👬Міні Груповий урок", callback_data="mini-group")
+speakingukr = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="speaking")
+optionsukr = InlineKeyboardMarkup().add(indukr).add(minigroupukr).add(groupukr).add(speakingukr).add(gbukr)
+
+indru = InlineKeyboardButton(text="🙋‍♂️Индивидуальный урок", callback_data="ind")
+groupru = InlineKeyboardButton(text="👨‍👩‍👧‍👦Групповой урок", callback_data="group")
+minigroupru = InlineKeyboardButton(text="👬Мини Груповий урок", callback_data="mini-group")
+speakingru = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="speaking")
+optionsru = InlineKeyboardMarkup().add(indru).add(minigroupru).add(groupru).add(speakingru).add(gbru)
 
 
 # START COMMAND
 @dp.message_handler(commands=["start"])
 async def welcome(message: types.Message):
-
-    try:
-        cur.execute('''SELECT lang FROM Users WHERE id = ?''', (message.from_user.id,))
-        global lang
-        lang = cur.fetchone()[0]
-    except:
-        await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters /help")
+    cur.execute('''SELECT lang FROM Users WHERE id = ?''', (message.from_user.id,))
+    lang = cur.fetchone()
 
     if lang == "eng":
         await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters type /help")
@@ -78,6 +91,8 @@ async def welcome(message: types.Message):
         await message.answer(f"Привіт {message.from_user.first_name}!\nЯ твій English Bro Bot 🤖 \nЯк ся маєш? \nДля початку введи /help")
     elif lang == "ru":
         await message.answer(f"Привет {message.from_user.first_name}!\nЯ твой English Bro Bot 🤖\nКак дела? \nДля начала нажми /help")
+    else:
+        await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters /help")
 
 
     cur.execute('''INSERT OR IGNORE INTO Users (id,name, lastName)
@@ -147,7 +162,7 @@ async def cancel(message: types.Message):
     await message.answer(responses("cancel_command", message.from_user.id))
 
 # ABOUT CLASS INFO
-@dp.message_handler(commands=["lessoninfo"])
+@dp.message_handler(commands=["info"])
 async def lessoninfo(message: types.Message):
     await message.answer(responses("lessoninfo_command", message.from_user.id), reply_markup=optionsKeyboard(message.from_user.id))
 
@@ -270,6 +285,46 @@ def responses(command, id):
         else: 
             return "If you want to attend a speaking class, join this group for further information: \nhttps://t.me/your_english_bro"
 
+    
+    elif str(command) == "indinfo":
+        if lang == "eng":
+            return '''Individual lesson is a perfect option for a person who wants to prepare for passing exams like TOEFL, IELTS, ЗНО or ДПА \n \nDuration: 55 minutes \nSchedule is created based on clients preference'''
+        elif lang == "ukr":
+            return '''Індивідуальне заняття - ідеальний варіант для людини, яка хоче підготуватися до здачі іспитів, таких як TOEFL, IELTS, ЗНО або ДПА \n \nТривалість: 55 хвилин \nРозклад створюється на основі уподобань клієнта'''
+        elif lang == "ru":
+            return '''Индивидуальное занятие - идеальный вариант для человека, который хочет подготовиться к сдаче таких экзаменов, как TOEFL, IELTS, ЗНО или ДПА \n \nПродолжительность: 55 минут \nРасписание составляется исходя из предпочтений клиента'''
+        else:
+            return '''Individual lesson is a perfect option for a person who wants to prepare for passing exams like TOEFL, IELTS, ЗНО or ДПА \n \nDuration: 55 minutes \nSchedule is created based on clients preference'''
+
+    elif str(command) == "groupinfo":
+        if lang == "eng":
+            return '''Group lessons is a perfect option for a person who wants to improve grammar, reading and listening skills along with other people. All people in the groups are of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group'''
+        elif lang == "ukr":
+            return '''Групові заняття – ідеальний варіант для людини, яка хоче разом з іншими людьми покращити граматику, навички читання та аудіювання. Усі люди в групах однакового віку та рівня. \n \nТривалість: 55 або 115 хвилин \n5-8 осіб у групі'''
+        elif lang == "ru":
+            return '''Group lessons is a perfect option for a person who wants to improve grammar, reading and listening skills along with other people. All people in the groups are of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group'''
+        else:
+            return '''Group lessons is a perfect option for a person who wants to improve grammar, reading and listening skills along with other people. All people in the groups are of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group'''
+
+    elif str(command) == "mini-group":
+        if lang == "eng":
+            return '''Mini-group lesson is a perfect option for a person who wants to improve speaking, grammar, reading and listening skills along with other people. All students are similar age and level. \n \nDuration: 55 or 115 minutes \n2-4 people in the group'''
+        elif lang == "ukr":
+            return '''Заняття в міні-групі – ідеальний варіант для людини, яка хоче разом з іншими людьми покращити навички говоріння, граматики, читання та аудіювання. Усі учні однакового віку та рівня. \n \nТривалість: 55 або 115 хвилин \n2-4 людини в групі'''
+        elif lang == "ru":
+            return '''Занятие в мини-группе — идеальный вариант для человека, который хочет улучшить навыки говорения, грамматики, чтения и аудирования вместе с другими людьми. Все ученики одного возраста и уровня. \n \nПродолжительность: 55 или 115 минут \n2-4 человека в группе'''
+        else:
+            return '''Mini-group lesson is a perfect option for a person who wants to improve speaking, grammar, reading and listening skills along with other people. All students are similar age and level. \n \nDuration: 55 or 115 minutes \n2-4 people in the group'''
+    
+    elif str(command) == "speakinginfo":
+        if lang == "eng":
+            return '''Speaking club is a perfect type of the lesson where you can improve your speaking skills. \nFor now the speaking classes are completely free'''
+        elif lang == "ukr":
+            return '''Speaking club – ідеальний тип уроку, де ви можете покращити свої мовленнєві навички. \nНаразі Speaking урокы абсолютно безкоштовні'''
+        elif lang == "ru":
+            return '''Разговорный клуб — это идеальный вариант урока, на котором вы можете улучшить свои разговорные навыки. \nНа данный момент Speaking уроки совершенно бесплатны.'''
+        else:
+            return '''Speaking club is a perfect type of the lesson where you can improve your speaking skills. \nFor now the speaking classes are completely free'''
     
     elif str(command) == "about_command":
         if lang == "eng":
