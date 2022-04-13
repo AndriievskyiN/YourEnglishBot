@@ -57,23 +57,23 @@ speakingru = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data=
 optionsru = InlineKeyboardMarkup().add(indru).add(minigroupru).add(groupru).add(speakingru).add(gbru)
 
 # INFO COMMAND BUTTONS
-indeng = InlineKeyboardButton(text="🙋‍♂️Individual Class", callback_data="ind")
-groupeng = InlineKeyboardButton(text="👨‍👩‍👧‍👦Group class", callback_data="group")
-minigroupeng = InlineKeyboardButton(text="👬Mini Group class", callback_data="mini-group")
-speakingeng = InlineKeyboardButton(text="🗣Speaking class", callback_data="speaking")
-optionseng = InlineKeyboardMarkup().add(indeng).add(minigroupeng).add(groupeng).add(speakingeng).add(gbeng)
+iindeng = InlineKeyboardButton(text="🙋‍♂️Individual Class", callback_data="ind")
+igroupeng = InlineKeyboardButton(text="👨‍👩‍👧‍👦Group class", callback_data="group")
+iminigroupeng = InlineKeyboardButton(text="👬Mini Group class", callback_data="mini-group")
+ispeakingeng = InlineKeyboardButton(text="🗣Speaking class", callback_data="speaking")
+ioptionseng = InlineKeyboardMarkup().add(iindeng).add(iminigroupeng).add(igroupeng).add(ispeakingeng).add(gbeng)
 
-indukr = InlineKeyboardButton(text="🙋‍♂️Індивідуальний урок", callback_data="ind")
-groupukr = InlineKeyboardButton(text="👨‍👩‍👧‍👦Груповий урок", callback_data="group")
-minigroupukr = InlineKeyboardButton(text="👬Міні Груповий урок", callback_data="mini-group")
-speakingukr = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="speaking")
-optionsukr = InlineKeyboardMarkup().add(indukr).add(minigroupukr).add(groupukr).add(speakingukr).add(gbukr)
+iindukr = InlineKeyboardButton(text="🙋‍♂️Індивідуальний урок", callback_data="ind")
+igroupukr = InlineKeyboardButton(text="👨‍👩‍👧‍👦Груповий урок", callback_data="group")
+iminigroupukr = InlineKeyboardButton(text="👬Міні Груповий урок", callback_data="mini-group")
+ispeakingukr = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="speaking")
+ioptionsukr = InlineKeyboardMarkup().add(iindukr).add(iminigroupukr).add(igroupukr).add(ispeakingukr).add(gbukr)
 
-indru = InlineKeyboardButton(text="🙋‍♂️Индивидуальный урок", callback_data="ind")
-groupru = InlineKeyboardButton(text="👨‍👩‍👧‍👦Групповой урок", callback_data="group")
-minigroupru = InlineKeyboardButton(text="👬Мини Груповий урок", callback_data="mini-group")
-speakingru = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="speaking")
-optionsru = InlineKeyboardMarkup().add(indru).add(minigroupru).add(groupru).add(speakingru).add(gbru)
+iindru = InlineKeyboardButton(text="🙋‍♂️Индивидуальный урок", callback_data="ind")
+igroupru = InlineKeyboardButton(text="👨‍👩‍👧‍👦Групповой урок", callback_data="group")
+iminigroupru = InlineKeyboardButton(text="👬Мини Груповий урок", callback_data="mini-group")
+ispeakingru = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="speaking")
+ioptionsru = InlineKeyboardMarkup().add(iindru).add(iminigroupru).add(igroupru).add(ispeakingru).add(gbru)
 
 
 # START COMMAND
@@ -161,7 +161,7 @@ async def cancel(message: types.Message):
 # ABOUT CLASS INFO
 @dp.message_handler(commands=["info"])
 async def lessoninfo(message: types.Message):
-    await message.answer(responses("lessoninfo_command", message.from_user.id), reply_markup=optionsKeyboard(message.from_user.id))
+    await message.answer(responses("lessoninfo_command", message.from_user.id), reply_markup=optionsInfo(message.from_user.id))
 
 # MANAGING CLASS INFO BUTTONS
 @dp.callback_query_handler(text=["gback","ind","group","mini-group","speaking"])
@@ -381,9 +381,24 @@ My big goal is to teach as many people as I can to make Ukraine an English speak
             else:
                 return "I'm sorry... I don't understand what you mean :("
 
+
+def optionsInfo(id):
+    cur.execute('''SELECT lang FROM Users WHERE id = ?''', (id,))
+    lang = cur.fetchone()
+
+    if lang == "eng":
+        return ioptionseng
+    elif lang == "ukr":
+        return ioptionsukr
+    elif lang == "ru":
+        return ioptionsru
+    else:
+        return ioptionseng
+
+
 def optionsKeyboard(id):
     cur.execute('''SELECT lang FROM Users WHERE id = ?''', (id,))
-    lang = cur.fetchone()[0]
+    lang = cur.fetchone()
 
     if lang == "eng":
         return optionseng
