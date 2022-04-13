@@ -1,9 +1,6 @@
-import re
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import sqlite3
-
-from telegram import ReplyKeyboardMarkup
 
 # SETTING UP DATABASES
 conn = sqlite3.connect("users.sqlite")
