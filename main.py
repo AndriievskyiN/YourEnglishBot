@@ -169,6 +169,14 @@ async def manage_options(call: types.CallbackQuery):
 async def cancel(message: types.Message):
     await message.answer(responses("cancel_command", message.from_user.id))
 
+# TEST
+@dp.message_handler(commands=["test"])
+async def cancel(message: types.Message):
+    cur.execute('''SELECT * FROM Users''')
+    users = cur.fetchall()
+    for i in users:
+        await message.answer(i)
+
 # ABOUT CLASS INFO
 @dp.message_handler(commands=["info"])
 async def lessoninfo(message: types.Message):
