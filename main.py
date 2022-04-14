@@ -346,7 +346,7 @@ def responses(command, id):
         elif lang == "ru":
             return "Если ты хочешь посетить занятие в мини-группе, свяжись с учителем напрямую в Telegram, по телефону или в Instagram \n/contact"
         else:
-            return "If you want to attend a mini-group class, please contact the teacher directly via Telegram, phone call, or Instagram \n/contact v"
+            return "If you want to attend a mini-group class, please contact the teacher directly via Telegram, phone call, or Instagram \n/contact"
 
     elif str(command) == "speaking_classes":
         if lang == "eng":
