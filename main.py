@@ -203,7 +203,7 @@ async def manage_classinfo(call: types.CallbackQuery):
 # STUDENTS COMMAND FOR VYACHESLAV
 @dp.message_handler(commands=["students"])
 async def students(message: types.Message):
-    if message.from_user.id == 579467950:
+    if message.from_user.id == 579467950 or message.from_user.id == 626136941:
         count = 0
         for i in VyacheslavStudents(message.from_user.id):
             await message.answer(i)     
@@ -218,7 +218,7 @@ async def students(message: types.Message):
 async def messages(message: types.Message):
     # MANAGING COMMANDS FOR VYACHESLAV
     if message.text.startswith("@add"):
-        if message.from_user.id == 579467950:
+        if message.from_user.id == 579467950 or message.from_user.id == 626136941:
             global full
             full = message.text.split()
             global firstName
