@@ -1,3 +1,4 @@
+from subprocess import call
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import sqlite3
@@ -11,6 +12,14 @@ cur.execute('''CREATE TABLE IF NOT EXISTS Users (
     name TEXT,
     lastName TEXT,
     lang
+)''')
+
+cur.execute('''CREATE TABLE IF NOT EXISTS Schedule (
+   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
+   firstName TEXT,
+   lastName TEXT,
+   day TEXT,
+   time TEXT
 )''')
 conn.commit()
 
@@ -74,7 +83,6 @@ igroupru = InlineKeyboardButton(text="👨‍👩‍👧‍👦Группово�
 iminigroupru = InlineKeyboardButton(text="👬Мини Груповий урок", callback_data="imini-group")
 ispeakingru = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="ispeaking")
 ioptionsru = InlineKeyboardMarkup().add(iindru).add(iminigroupru).add(igroupru).add(ispeakingru).add(gbru)
-
 
 # START COMMAND
 @dp.message_handler(commands=["start"])
@@ -184,10 +192,68 @@ async def manage_classinfo(call: types.CallbackQuery):
         await call.message.delete()
         await call.message.answer(responses("speakinginfo", call.from_user.id))
 
+# STUDENTS COMMAND FOR VYACHESLAV
+@dp.message_handler(commands=["students"])
+async def students(message: types.Message):
+    if message.from_user.id == 579467950:
+        count = 0
+        for i in VyacheslavStudents(message.from_user.id):
+            await message.answer(i)     
+            await message.answer("--------------------------")   
+            count += 1
+        await message.answer(replyVyacheslav("show_count",message.from_user.id, count))
+    else:
+        await message.answer(responses(message.text, message.from_user.id))
+
 # MANAGING REGULAR MESSAGES
 @dp.message_handler()
 async def messages(message: types.Message):
-    await message.answer(responses(message.text, message.from_user.id))
+    # MANAGING COMMANDS FOR VYACHESLAV
+    if message.text.startswith("@add"):
+        if message.from_user.id == 579467950:
+            global full
+            full = message.text.split()
+            global firstName
+            firstName = full[1].capitalize()
+            global lastName
+            lastName = full[2].capitalize()
+            global day 
+            day = full[3].lower()
+            global hour
+            hour = full[4]
+
+            if day == "понедельник" or day == "понеділок":
+                day = "monday"
+            elif day == "вторник" or day == "вівторок":
+                day = "tuesday"
+            elif day == "среда" or day == "середа":
+                day = "wednesday"
+            elif day == "четверг" or day == "четвер":
+                day = "thursday"
+            elif day == "пятница" or day == "п'ятниця":
+                day = "friday"
+            elif day == "суббота" or day == "субота":
+                day = "saturday"
+            elif day == "воскресенье" or day == "неділя":
+                day = "sunday"
+
+            await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id))
+    else:
+        await message.answer(responses(message.text, message.from_user.id))
+
+# ASKING IF EVERYTHING IS CORRECT
+@dp.callback_query_handler(text=["yesb", "nob"])
+async def uSure(call: types.CallbackQuery):
+    if call.data == "yesb":
+        cur.execute('''INSERT OR REPLACE INTO Schedule (firstName, lastName, day, time)
+            VALUES (?,?,?,?)''',(firstName, lastName, day, hour))
+        conn.commit()
+        await call.message.delete()
+        await call.message.answer(replyVyacheslav("vyacheslav_add", call.from_user.id, full))
+
+    if call.data == "nob":
+        await call.message.delete()
+        await call.message.answer(replyVyacheslav("nob", call.from_user.id))
 
 def responses(command, id):
     cur.execute('''SELECT lang FROM Users WHERE id = ?''',(id,))
@@ -195,13 +261,13 @@ def responses(command, id):
 
     if str(command) == "help_command":
         if lang == "eng":
-            return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/book - Book a class \n/cancel Cancel a class \n/help - Get the list of all commands \n------------------------------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n/contact"
+            return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/info - Understand what lesson fits you the best\n/book - Book a class \n/cancel Cancel a class \n/help - Get the list of all commands \n------------------------------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n/contact"
         elif lang == "ukr":
-            return "Це список усіх команд: \n/start - Запустити бота \n/about - Дізнатися більше про вчителя \n/lang - Вибери свою мову \n/contact - Зв'яжись з вчителем \n/book - Забронювати урок \n/cancel - Скасувати урок \n/help - Отримай список усіх команд \n------------------------------------------------------------- \nЯкщо це не те, що ти шукаєш, звернись безпосередньо до вчителя: \n/contact"
+            return "Це список усіх команд: \n/start - Запустити бота \n/about - Дізнатися більше про вчителя \n/lang - Вибери свою мову \n/contact - Зв'яжись з вчителем \n/info - Зрозумій, який урок тобі найбільше підходить\n/book - Забронювати урок \n/cancel - Скасувати урок \n/help - Отримай список усіх команд \n------------------------------------------------------------- \nЯкщо це не те, що ти шукаєш, звернись безпосередньо до вчителя: \n/contact"
         elif lang == "ru":
-            return "Это список всех команд: \n/start - Запустить бота \n/about - Узнать больше про учителя \n/lang - Выбрать язык \n/contact - Связаться с учителем \n/book - Забронировать урок \n/cancel - Отменить урок \n/help - Получить список всех команд \n-------------------------------------------------------------- \nЕсли это не то, что ты ищешь, свяжись напрямую с учителем: \n/contact"
+            return "Это список всех команд: \n/start - Запустить бота \n/about - Узнать больше про учителя \n/lang - Выбрать язык \n/contact - Связаться с учителем \n info - Пойми, какой урок подходит тебе лучше всего\n/book - Забронировать урок \n/cancel - Отменить урок \n/help - Получить список всех команд \n-------------------------------------------------------------- \nЕсли это не то, что ты ищешь, свяжись напрямую с учителем: \n/contact"
         else:
-            return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/book - Book a class \n/cancel Cancel a class \n/help - Get the list of all commands \n------------------------------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n/contact"
+            return "This is the list of all commands: \n/start - Start the bot \n/about - Get to know the teacher better \n/lang - Select your language \n/contact - Contact the teacher \n/info - Understand what lesson fits you the best\n/book - Book a class \n/cancel Cancel a class \n/help - Get the list of all commands \n------------------------------------------------------------- \nIf this is not something you're looking for, please contact the teacher directly: \n/contact"
 
     elif str(command) == "lang_command":
         if lang == "eng":
@@ -233,7 +299,6 @@ def responses(command, id):
             return "Если ты хочешь отменить занятие, свяжись с учителем напрямую: \n+380951775440"
         else:
             return "If you want to cancel a class, please contact the teacher directly: \n+380951775440"
-
 
     elif str(command) == "book_command":
         if lang == "eng":
@@ -297,44 +362,44 @@ def responses(command, id):
 
     elif str(command) == "indinfo":
         if lang == "eng":
-            return '''Individual lesson is a perfect option for a person who wants to prepare for passing exams like TOEFL, IELTS, ЗНО or ДПА \n \nDuration: 55 minutes \nSchedule is created based on clients preference'''
+            return '''🙋‍♂️Individual lesson is a perfect option for a person who wants to prepare for passing exams like TOEFL, IELTS, ЗНО or ДПА \n \nDuration: 55 minutes \nSchedule is created based on clients preference'''
         elif lang == "ukr":
-            return '''Індивідуальне заняття - ідеальний варіант для людини, яка хоче підготуватися до здачі іспитів, таких як TOEFL, IELTS, ЗНО або ДПА \n \nТривалість: 55 хвилин \nРозклад створюється на основі уподобань клієнта'''
+            return '''🙋‍♂️Індивідуальне заняття - ідеальний варіант для людини, яка хоче підготуватися до здачі іспитів, таких як TOEFL, IELTS, ЗНО або ДПА \n \nТривалість: 55 хвилин \nРозклад створюється на основі уподобань клієнта'''
         elif lang == "ru":
-            return '''Индивидуальное занятие - идеальный вариант для человека, который хочет подготовиться к сдаче таких экзаменов, как TOEFL, IELTS, ЗНО или ДПА \n \nПродолжительность: 55 минут \nРасписание составляется исходя из предпочтений клиента'''
+            return '''🙋‍♂️Индивидуальное занятие - идеальный вариант для человека, который хочет подготовиться к сдаче таких экзаменов, как TOEFL, IELTS, ЗНО или ДПА \n \nПродолжительность: 55 минут \nРасписание составляется исходя из предпочтений клиента'''
         else:
-            return '''Individual lesson is a perfect option for a person who wants to prepare for passing exams like TOEFL, IELTS, ЗНО or ДПА \n \nDuration: 55 minutes \nSchedule is created based on clients preference'''
+            return '''🙋‍♂️Individual lesson is a perfect option for a person who wants to prepare for passing exams like TOEFL, IELTS, ЗНО or ДПА \n \nDuration: 55 minutes \nSchedule is created based on clients preference'''
 
     elif str(command) == "groupinfo":
         if lang == "eng":
-            return '''Group lessons is a perfect option for a person who wants to improve grammar, reading and listening skills along with other people. All people in the groups are of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group'''
+            return '''👨‍👩‍👧‍👦Group lessons is a perfect option for a person who wants to improve: \n\n✅grammar \n📖reading \n👂listening skills along with other people. \nAll people in the groups are of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group'''
         elif lang == "ukr":
-            return '''Групові заняття – ідеальний варіант для людини, яка хоче разом з іншими людьми покращити граматику, навички читання та аудіювання. Усі люди в групах однакового віку та рівня. \n \nТривалість: 55 або 115 хвилин \n5-8 осіб у групі'''
+            return '''👨‍👩‍👧‍👦Групові заняття – ідеальний варіант для людини, яка хоче разом з іншими людьми покращити \n\n✅граматику \n📖навички читання \n👂аудіювання. \nУсі люди в групах однакового віку та рівня. \n \nТривалість: 55 або 115 хвилин \n5-8 осіб у групі'''
         elif lang == "ru":
-            return '''Group lessons is a perfect option for a person who wants to improve grammar, reading and listening skills along with other people. All people in the groups are of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group'''
+            return '''👨‍👩‍👧‍👦Групповые занятия — идеальный вариант для человека, который хочет улучшить \n\n✅грамматику \n📖навыки чтения \n👂аудирования вместе с другими людьми. \nВсе люди в группах одного возраста и уровня. \n \nПродолжительность: 55 или 115 минут \n5-8 человек в группе'''
         else:
-            return '''Group lessons is a perfect option for a person who wants to improve grammar, reading and listening skills along with other people. All people in the groups are of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group'''
+            return '''👨‍👩‍👧‍👦Group lessons is a perfect option for a person who wants to improve \n\n✅grammar \n📖reading \n👂listening skills along with other people. \nAll people in the groups are of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group'''
 
     elif str(command) == "mini-groupinfo":
         if lang == "eng":
-            return '''Mini-group lesson is a perfect option for a person who wants to improve speaking, grammar, reading and listening skills along with a small group of people. All students are similar age and level. \n \nDuration: 55 or 115 minutes \n2-4 people in the group'''
+            return '''👬Mini-group lesson is a perfect option for a person who wants to improve \n\n🗣speaking \n✅grammar \n📖reading \n👂listening skills along with a small group of people. \nAll students are similar age and level. \n \nDuration: 55 or 115 minutes \n2-4 people in the group'''
         elif lang == "ukr":
-            return '''Заняття в міні-групі – ідеальний варіант для людини, яка хоче разом з невеликою групою людейи покращити навички говоріння, граматики, читання та аудіювання. Усі учні однакового віку та рівня. \n \nТривалість: 55 або 115 хвилин \n2-4 людини в групі'''
+            return '''👬Заняття в міні-групі – ідеальний варіант для людини, яка хоче разом з невеликою групою людей та покращити \n\n🗣навички говоріння \n✅граматики \n📖читання \n👂аудіювання. \nУсі учні однакового віку та рівня. \n \nТривалість: 55 або 115 хвилин \n2-4 людини в групі'''
         elif lang == "ru":
-            return '''Занятие в мини-группе — идеальный вариант для человека, который хочет улучшить навыки говорения, грамматики, чтения и аудирования вместе с небольшой группой. Все ученики одного возраста и уровня. \n \nПродолжительность: 55 или 115 минут \n2-4 человека в группе'''
+            return '''👬Занятие в мини-группе — идеальный вариант для человека, который хочет улучшить \n\n🗣навыки говорения \n✅грамматики \n📖чтения \n👂аудирования вместе с небольшой группой. \nВсе ученики одного возраста и уровня. \n \nПродолжительность: 55 или 115 минут \n2-4 человека в группе'''
         else:
-            return '''Mini-group lesson is a perfect option for a person who wants to improve speaking, grammar, reading and listening skills along with a small group of people. All students are similar age and level. \n \nDuration: 55 or 115 minutes \n2-4 people in the group'''
+            return '''👬Mini-group lesson is a perfect option for a person who wants to improve \n\n🗣speaking \n✅grammar \n📖reading \n👂listening skills along with a small group of people. \nAll students are similar age and level. \n \nDuration: 55 or 115 minutes \n2-4 people in the group'''
     
     elif str(command) == "speakinginfo":
         if lang == "eng":
-            return '''Speaking club is a perfect type of the lesson where you can improve your speaking skills. \nFor now the speaking classes are completely free'''
+            return '''🗣Speaking club is a perfect type of the lesson where you can improve your speaking skills. \n\nFor now the speaking classes are completely free'''
         elif lang == "ukr":
-            return '''Speaking club – ідеальний тип уроку, де ви можете покращити свої мовленнєві навички. \nНаразі Speaking урокы абсолютно безкоштовні'''
+            return '''🗣Speaking club – ідеальний тип уроку, де ви можете покращити свої мовленнєві навички. \n\nНаразі Speaking урокы абсолютно безкоштовні'''
         elif lang == "ru":
-            return '''Разговорный клуб — это идеальный вариант урока, на котором вы можете улучшить свои разговорные навыки. \nНа данный момент Speaking уроки совершенно бесплатны.'''
+            return '''🗣Разговорный клуб — это идеальный вариант урока, на котором вы можете улучшить свои разговорные навыки. \n\nНа данный момент Speaking уроки совершенно бесплатны.'''
         else:
-            return '''Speaking club is a perfect type of the lesson where you can improve your speaking skills. \nFor now the speaking classes are completely free'''
-    
+            return '''🗣Speaking club is a perfect type of the lesson where you can improve your speaking skills. \n\nFor now the speaking classes are completely free'''
+
     elif str(command) == "about_command":
         if lang == "eng":
             return '''My name is Viacheslav aka Your English Bro 😎 
@@ -376,6 +441,8 @@ I have BBA and MBA, so I know something about business as well as economics 💵
 I have worked as a farmer, a manager, a translator, a trainer, had my own company, but my real passion has always been teaching.
 
 My big goal is to teach as many people as I can to make Ukraine an English speaking country'''
+
+    
     else:
         if str(command).lower() in hi_eng:
             return "Hello there!"
@@ -420,6 +487,221 @@ def optionsKeyboard(id):
         return optionsru
     else:
         return optionseng
+
+def replyVyacheslav(*args):
+    cur.execute('''SELECT lang FROM Users WHERE id = ?''', (args[1],))
+    lang = cur.fetchone()[0]
+
+    if args[0] == "vyacheslav_add":
+        cur.execute('''SELECT day, time FROM Schedule WHERE firstName = ? and lastName = ?''',(str(args[2][1]).capitalize(),str(args[2][2]).capitalize()))
+        global day
+        day, hour = cur.fetchall()[-1]
+        if lang == "eng":
+            return f"{str(args[2][1]).capitalize()} {str(args[2][2]).capitalize()} is successfully added on {str(day).capitalize()} {args[2][4]}"
+        elif lang == "ukr":
+            if day == "monday":
+                day = "Понеділок"
+            elif day == "tuesday":
+                day = "Вівторок"
+            elif day == "wednesday":
+                day = "Середу"
+            elif day == "thursday":
+                day = "Четвер"
+            elif day == "friday":
+                day = "П'ятницю"
+            elif day == "saturday":
+                day = "Суботу"
+            elif day == "sunday":
+                day = "Неділю"
+            return f"{str(args[2][1]).capitalize()} {str(args[2][2]).capitalize()} успішно доданий на {day} {args[2][4]}"
+    
+        elif lang == "ru":
+            if day == "monday":
+                day = "Понедельник"
+            elif day == "tuesday":
+                day = "Вторник"
+            elif day == "wednesday":
+                day = "Среду"
+            elif day == "thursday":
+                day = "Четверг"
+            elif day == "friday":
+                day = "Пятницу"
+            elif day == "saturday":
+                day = "Субботу"
+            elif day == "sunday":
+                day = "Воскресенье"
+            return f"{str(args[2][1]).capitalize()} {str(args[2][2]).capitalize()} удачно добавленый на {str(day).capitalize()} {args[2][4]}"
+        else:
+            return f"{str(args[2][1]).capitalize()} {str(args[2][2]).capitalize()} is successfully added on {str(args[2][3]).capitalize()} {args[2][4]}"
+
+    elif args[0] == "vyacheslav_sure":
+        message = str(args[2]).split()
+        firstName = message[1]
+        lastName = message[2]
+        dday = str(message[3]).lower()
+        hour = message[4]
+
+        if lang == "eng":
+            theday = translate("eng", dday)
+            return f"Is everything correct? \n{firstName} {lastName} {theday} {hour}"
+        elif lang == "ukr":
+            theday = translate("ukr", dday)
+            return f"Все правильно? \n{firstName} {lastName} {theday} {hour}"
+        elif lang == "ru":
+            theday = translate("ru", dday)
+            return f"Всё правильно? \n{firstName} {lastName} {theday} {hour}"
+        else: 
+            theday = translate("eng", dday)
+            return f"Is everything correct? \n{firstName} {lastName} {theday} {hour}"
+
+    elif args[0] == "nob":
+        if lang == "eng":
+            return "Okay, this class was not added... If you want to change something and add a class again, please type the same command, and make sure everything is correct😁"
+        elif lang == "ukr":
+            return "Гаразд, цей урок не додано... Якщо ви хочете щось змінити та знову додати урок, введіть ту саму команду та переконайтеся, що все правильно😁"
+        elif lang == "ru":
+            return "Хорошо, этот урок не был добавлен... Если вы хотите что-то изменить и снова добавить урок, введите ту же команду, и убедитесь, что все правильно😁"
+        else:
+            return "Okay, this class was not added... If you want to change something and add a class again, please type the same command, and make sure everything is correct😁"
+
+    elif args[0] == "show_count":
+        if lang == "eng":
+            return f"Total number of classes: {args[2]}"
+        elif lang == "ukr":
+            return f"Всього уроків: {args[2]}"
+        elif lang == "ru":
+            return f"Всего уроков: {args[2]}"
+        else:
+            return f"Total number of classes: {args[2]}"
+
+def VyacheslavStudents(id):
+    students = []
+    cur.execute("SELECT * FROM Schedule")
+    classes = cur.fetchall()
+    cur.execute("SELECT lang FROM Users WHERE id = ?",(id,))
+    lang = cur.fetchone()[0]
+
+    for i in classes:
+        if lang == "eng":
+            day = str(i[3]).capitalize()
+        elif lang == "ukr":
+            day = translate("ukr", i[3])
+        elif lang == "ru":
+            day = translate("ru", i[3])
+        else:
+            day = str(i[3]).capitalize()
+
+        students.append(f"{i[1]} {i[2]} {day} {i[4]}")
+    return students
+
+def yesnoKeyboard(id):
+    cur.execute("SELECT lang FROM Users WHERE id = ?", (id,))
+    lang = cur.fetchone()[0]
+
+    if lang == "eng":
+        yesb = InlineKeyboardButton(text="Yes", callback_data="yesb")
+        nob = InlineKeyboardButton(text="No", callback_data="nob")
+    elif lang == "ukr":
+        yesb = InlineKeyboardButton(text="Так", callback_data="yesb")
+        nob = InlineKeyboardButton(text="Ні", callback_data="nob")
+    elif lang == "ru":
+        yesb = InlineKeyboardButton(text="Да", callback_data="yesb")
+        nob = InlineKeyboardButton(text="Нет", callback_data="nob")
+    
+    return InlineKeyboardMarkup().add(yesb).add(nob)
+
+def translate(lang, day):
+    if lang == "ukr":
+        if str(day) == "monday":
+            day = "Понеділок"
+        elif str(day) == "tuesday":
+            day = "Вівторок"
+        elif str(day) == "wednesday":
+            day = "Середа"
+        elif str(day) == "thursday":
+            day = "Четвер"
+        elif str(day) == "friday":
+            day = "П'ятниця"
+        elif str(day) == "saturday":
+            day = "Субота"
+        elif str(day) == "sunday":
+            day = "Неділя"
+        elif str(day) == "понедельник":
+            day = "Понеділок"
+        elif str(day) == "вторник":
+            day = "Вівторок"
+        elif str(day) == "среда":
+            day = "Середа"
+        elif str(day) == "четверг":
+            day = "Четвер"
+        elif str(day) == "пятница":
+            day = "П'ятниця"
+        elif str(day) == "суббота":
+            day = "Субота"
+        elif str(day) == "воскресенье":
+            day = "Неділя"
+
+    elif lang == "ru":
+        if str(day) == "monday":
+            day = "Понедельник"
+        elif str(day) == "tuesday":
+            day = "Вторник"
+        elif str(day) == "wednesday":
+            day = "Среда"
+        elif str(day) == "thursday":
+            day = "Четверг"
+        elif str(day) == "friday":
+            day = "Пятница"
+        elif str(day) == "saturday":
+            day = "Суббота"
+        elif str(day) == "sunday":
+            day = "Воскресенье"
+        elif str(day) == "понеділок":
+            day = "Понедельник"
+        elif str(day) == "вівторок":
+            day = "Вторник"
+        elif str(day) == "середа":
+            day = "Среда"
+        elif str(day) == "четвер":
+            day = "Четверг"
+        elif str(day) == "п'ятниця":
+            day = "Пятница"
+        elif str(day) == "субота":
+            day = "Суббота"
+        elif str(day) == "неділя":
+            day = "Воскресенье"
+    
+    elif lang == "eng":
+        if str(day) == "понедельник":
+            day = "Monday"
+        elif str(day) == "вторник":
+            day = "Tuesday"
+        elif str(day) == "среда":
+            day = "Wednesday"
+        elif str(day) == "четверг":
+            day = "Thursday"
+        elif str(day) == "пятница":
+            day = "Friday"
+        elif str(day) == "cуббота":
+            day = "Saturday"
+        elif str(day) == "Воскресенье":
+            day = "Sunday"
+        elif str(day) == "понеділок":
+            day = "Monday"
+        elif str(day) == "вівторок":
+            day = "Tuesday"
+        elif str(day) == "середа":
+            day = "Wednesday"
+        elif str(day) == "четвер":
+            day = "Thursday"
+        elif str(day) == "п'ятниця":
+            day = "Friday"
+        elif str(day) == "субота":
+            day = "Saturday"
+        elif str(day) == "неділя":
+            day = "Sunday"
+
+    return day
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
