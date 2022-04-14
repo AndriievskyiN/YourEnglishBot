@@ -57,22 +57,22 @@ speakingru = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data=
 optionsru = InlineKeyboardMarkup().add(indru).add(minigroupru).add(groupru).add(speakingru).add(gbru)
 
 # INFO COMMAND BUTTONS
-iindeng = InlineKeyboardButton(text="🙋‍♂️Individual Class", callback_data="ind")
-igroupeng = InlineKeyboardButton(text="👨‍👩‍👧‍👦Group class", callback_data="group")
-iminigroupeng = InlineKeyboardButton(text="👬Mini Group class", callback_data="mini-group")
-ispeakingeng = InlineKeyboardButton(text="🗣Speaking class", callback_data="speaking")
+iindeng = InlineKeyboardButton(text="🙋‍♂️Individual Class", callback_data="iind")
+igroupeng = InlineKeyboardButton(text="👨‍👩‍👧‍👦Group class", callback_data="igroup")
+iminigroupeng = InlineKeyboardButton(text="👬Mini Group class", callback_data="imini-group")
+ispeakingeng = InlineKeyboardButton(text="🗣Speaking class", callback_data="ispeaking")
 ioptionseng = InlineKeyboardMarkup().add(iindeng).add(iminigroupeng).add(igroupeng).add(ispeakingeng).add(gbeng)
 
-iindukr = InlineKeyboardButton(text="🙋‍♂️Індивідуальний урок", callback_data="ind")
-igroupukr = InlineKeyboardButton(text="👨‍👩‍👧‍👦Груповий урок", callback_data="group")
-iminigroupukr = InlineKeyboardButton(text="👬Міні Груповий урок", callback_data="mini-group")
-ispeakingukr = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="speaking")
+iindukr = InlineKeyboardButton(text="🙋‍♂️Індивідуальний урок", callback_data="iind")
+igroupukr = InlineKeyboardButton(text="👨‍👩‍👧‍👦Груповий урок", callback_data="igroup")
+iminigroupukr = InlineKeyboardButton(text="👬Міні Груповий урок", callback_data="imini-group")
+ispeakingukr = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="ispeaking")
 ioptionsukr = InlineKeyboardMarkup().add(iindukr).add(iminigroupukr).add(igroupukr).add(ispeakingukr).add(gbukr)
 
-iindru = InlineKeyboardButton(text="🙋‍♂️Индивидуальный урок", callback_data="ind")
-igroupru = InlineKeyboardButton(text="👨‍👩‍👧‍👦Групповой урок", callback_data="group")
-iminigroupru = InlineKeyboardButton(text="👬Мини Груповий урок", callback_data="mini-group")
-ispeakingru = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="speaking")
+iindru = InlineKeyboardButton(text="🙋‍♂️Индивидуальный урок", callback_data="iind")
+igroupru = InlineKeyboardButton(text="👨‍👩‍👧‍👦Групповой урок", callback_data="igroup")
+iminigroupru = InlineKeyboardButton(text="👬Мини Груповий урок", callback_data="imini-group")
+ispeakingru = InlineKeyboardButton(text='"🗣Speaking" урок', callback_data="ispeaking")
 ioptionsru = InlineKeyboardMarkup().add(iindru).add(iminigroupru).add(igroupru).add(ispeakingru).add(gbru)
 
 
@@ -149,6 +149,9 @@ async def manage_options(call: types.CallbackQuery):
     elif call.data == "group":
         await call.message.delete()
         await call.message.answer(responses("group_classes", call.from_user.id))
+    elif call.data == "mini-group":
+        await call.message.delete()
+        await call.message.answer(responses("mini-group_classes",call.from_user.id))
     elif call.data == "speaking":
         await call.message.delete()
         await call.message.answer(responses("speaking_classes", call.from_user.id))
@@ -164,20 +167,20 @@ async def lessoninfo(message: types.Message):
     await message.answer(responses("lessoninfo_command", message.from_user.id), reply_markup=optionsInfo(message.from_user.id))
 
 # MANAGING CLASS INFO BUTTONS
-@dp.callback_query_handler(text=["gback","ind","group","mini-group","speaking"])
+@dp.callback_query_handler(text=["gback","iind","igroup","imini-group","ispeaking"])
 async def manage_classinfo(call: types.CallbackQuery):
     if call.data == "gback":
         await call.message.delete()
-    elif call.data == "ind":
+    elif call.data == "iind":
         await call.message.delete()
         await call.message.answer(responses("indinfo", call.from_user.id))
-    elif call.data == "group":
+    elif call.data == "igroup":
         await call.message.delete()
         await call.message.answer(responses("groupinfo", call.from_user.id))
-    elif call.data == "mini-group":
+    elif call.data == "imini-group":
         await call.message.delete()
         await call.message.answer(responses("mini-groupinfo", call.from_user.id))
-    elif call.data == "speaking":
+    elif call.data == "ispeaking":
         await call.message.delete()
         await call.message.answer(responses("speakinginfo", call.from_user.id))
 
@@ -188,7 +191,7 @@ async def messages(message: types.Message):
 
 def responses(command, id):
     cur.execute('''SELECT lang FROM Users WHERE id = ?''',(id,))
-    lang = cur.fetchone()
+    lang = cur.fetchone()[0]
 
     if str(command) == "help_command":
         if lang == "eng":
@@ -262,15 +265,15 @@ def responses(command, id):
         else: 
             return "I'm sorry... This command doesn't work for now :("
 
-    elif str(command) == "lessoninfo_command":
+    elif str(command) == "mini-group_classes":
         if lang == "eng":
-            return "Select a lesson you want to know more about"
+            return "If you want to attend a mini-group class, please contact the teacher directly via Telegram, phone call, or Instagram \n/contact"
         elif lang == "ukr":
-            return "Обери урок, про який хочеш дізнатися більше"
+            return "Якщо ти хочеш відвідати заняття в міні-групі, зв’яжись з вчителем безпосередньо через Telegram, телефонний дзвінок або Instagram \n/contact"
         elif lang == "ru":
-            return "Выбери урок, о котором хочешь узнать больше"
+            return "Если ты хочешь посетить занятие в мини-группе, свяжись с учителем напрямую в Telegram, по телефону или в Instagram \n/contact"
         else:
-            return "Select a lesson you want to know more about"
+            return "If you want to attend a mini-group class, please contact the teacher directly via Telegram, phone call, or Instagram \n/contact v"
 
     elif str(command) == "speaking_classes":
         if lang == "eng":
@@ -282,7 +285,16 @@ def responses(command, id):
         else: 
             return "If you want to attend a speaking class, join this group for further information: \nhttps://t.me/your_english_bro"
 
-    
+    elif str(command) == "lessoninfo_command":
+        if lang == "eng":
+            return "Select a lesson you want to know more about"
+        elif lang == "ukr":
+            return "Обери урок, про який хочеш дізнатися більше"
+        elif lang == "ru":
+            return "Выбери урок, о котором хочешь узнать больше"
+        else:
+            return "Select a lesson you want to know more about"
+
     elif str(command) == "indinfo":
         if lang == "eng":
             return '''Individual lesson is a perfect option for a person who wants to prepare for passing exams like TOEFL, IELTS, ЗНО or ДПА \n \nDuration: 55 minutes \nSchedule is created based on clients preference'''
@@ -303,15 +315,15 @@ def responses(command, id):
         else:
             return '''Group lessons is a perfect option for a person who wants to improve grammar, reading and listening skills along with other people. All people in the groups are of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group'''
 
-    elif str(command) == "mini-group":
+    elif str(command) == "mini-groupinfo":
         if lang == "eng":
-            return '''Mini-group lesson is a perfect option for a person who wants to improve speaking, grammar, reading and listening skills along with other people. All students are similar age and level. \n \nDuration: 55 or 115 minutes \n2-4 people in the group'''
+            return '''Mini-group lesson is a perfect option for a person who wants to improve speaking, grammar, reading and listening skills along with a small group of people. All students are similar age and level. \n \nDuration: 55 or 115 minutes \n2-4 people in the group'''
         elif lang == "ukr":
-            return '''Заняття в міні-групі – ідеальний варіант для людини, яка хоче разом з іншими людьми покращити навички говоріння, граматики, читання та аудіювання. Усі учні однакового віку та рівня. \n \nТривалість: 55 або 115 хвилин \n2-4 людини в групі'''
+            return '''Заняття в міні-групі – ідеальний варіант для людини, яка хоче разом з невеликою групою людейи покращити навички говоріння, граматики, читання та аудіювання. Усі учні однакового віку та рівня. \n \nТривалість: 55 або 115 хвилин \n2-4 людини в групі'''
         elif lang == "ru":
-            return '''Занятие в мини-группе — идеальный вариант для человека, который хочет улучшить навыки говорения, грамматики, чтения и аудирования вместе с другими людьми. Все ученики одного возраста и уровня. \n \nПродолжительность: 55 или 115 минут \n2-4 человека в группе'''
+            return '''Занятие в мини-группе — идеальный вариант для человека, который хочет улучшить навыки говорения, грамматики, чтения и аудирования вместе с небольшой группой. Все ученики одного возраста и уровня. \n \nПродолжительность: 55 или 115 минут \n2-4 человека в группе'''
         else:
-            return '''Mini-group lesson is a perfect option for a person who wants to improve speaking, grammar, reading and listening skills along with other people. All students are similar age and level. \n \nDuration: 55 or 115 minutes \n2-4 people in the group'''
+            return '''Mini-group lesson is a perfect option for a person who wants to improve speaking, grammar, reading and listening skills along with a small group of people. All students are similar age and level. \n \nDuration: 55 or 115 minutes \n2-4 people in the group'''
     
     elif str(command) == "speakinginfo":
         if lang == "eng":
@@ -384,7 +396,7 @@ My big goal is to teach as many people as I can to make Ukraine an English speak
 
 def optionsInfo(id):
     cur.execute('''SELECT lang FROM Users WHERE id = ?''', (id,))
-    lang = cur.fetchone()
+    lang = cur.fetchone()[0]
 
     if lang == "eng":
         return ioptionseng
@@ -398,7 +410,7 @@ def optionsInfo(id):
 
 def optionsKeyboard(id):
     cur.execute('''SELECT lang FROM Users WHERE id = ?''', (id,))
-    lang = cur.fetchone()
+    lang = cur.fetchone()[0]
 
     if lang == "eng":
         return optionseng
