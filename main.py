@@ -383,13 +383,13 @@ def responses(command, id):
 
     elif str(command) == "groupinfo":
         if lang == "eng":
-            return '''👨‍👩‍👧‍👦Group lessons is a perfect option for a person who wants to improve: \n\n✅grammar \n📖reading \n👂listening skills along with other people. \nAll people in the groups are of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group'''
+            return '''👨‍👩‍👧‍👦Group lessons is a perfect option for a person who wants to improve: \n\n✅grammar \n📖reading \n👂listening skills along with other people. \nEveryone in the groups are of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group'''
         elif lang == "ukr":
-            return '''👨‍👩‍👧‍👦Групові заняття – ідеальний варіант для людини, яка хоче разом з іншими людьми покращити \n\n✅граматику \n📖навички читання \n👂аудіювання. \nУсі люди в групах однакового віку та рівня. \n \nТривалість: 55 або 115 хвилин \n5-8 осіб у групі'''
+            return '''👨‍👩‍👧‍👦Групові заняття – ідеальний варіант для людини, яка хоче разом з іншими людьми покращити \n\n✅граматику \n📖навички читання \n👂аудіювання. \nУсі в групі однакового віку та рівня. \n \nТривалість: 55 або 115 хвилин \n5-8 осіб у групі'''
         elif lang == "ru":
-            return '''👨‍👩‍👧‍👦Групповые занятия — идеальный вариант для человека, который хочет улучшить \n\n✅грамматику \n📖навыки чтения \n👂аудирования вместе с другими людьми. \nВсе люди в группах одного возраста и уровня. \n \nПродолжительность: 55 или 115 минут \n5-8 человек в группе'''
+            return '''👨‍👩‍👧‍👦Групповые занятия — идеальный вариант для человека, который хочет улучшить \n\n✅грамматику \n📖навыки чтения \n👂аудирования вместе с другими людьми. \nВсе в группе одного возраста и уровня. \n \nПродолжительность: 55 или 115 минут \n5-8 человек в группе'''
         else:
-            return '''👨‍👩‍👧‍👦Group lessons is a perfect option for a person who wants to improve \n\n✅grammar \n📖reading \n👂listening skills along with other people. \nAll people in the groups are of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group'''
+            return '''👨‍👩‍👧‍👦Group lessons is a perfect option for a person who wants to improve \n\n✅grammar \n📖reading \n👂listening skills along with other people. \nEveryone in the groups are of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group'''
 
     elif str(command) == "mini-groupinfo":
         if lang == "eng":
@@ -397,7 +397,7 @@ def responses(command, id):
         elif lang == "ukr":
             return '''👬Заняття в міні-групі – ідеальний варіант для людини, яка хоче разом з невеликою групою людей покращити \n\n🗣навички говоріння \n✅граматики \n📖читання \n👂аудіювання. \nУсі учні однакового віку та рівня. \n \nТривалість: 55 або 115 хвилин \n2-4 людини в групі'''
         elif lang == "ru":
-            return '''👬Занятие в мини-группе — идеальный вариант для человека, который хочет улучшить \n\n🗣навыки говорения \n✅грамматики \n📖чтения \n👂аудирования вместе с небольшой группой. \nВсе ученики одного возраста и уровня. \n \nПродолжительность: 55 или 115 минут \n2-4 человека в группе'''
+            return '''👬Занятие в мини-группе — идеальный ваaриант для человека, который хочет улучшить \n\n🗣навыки говорения \n✅грамматики \n📖чтения \n👂аудирования вместе с небольшой группой. \nВсе ученики одного возраста и уровня. \n \nПродолжительность: 55 или 115 минут \n2-4 человека в группе'''
         else:
             return '''👬Mini-group lesson is a perfect option for a person who wants to improve \n\n🗣speaking \n✅grammar \n📖reading \n👂listening skills along with a small group of people. \nAll students are similar age and level. \n \nDuration: 55 or 115 minutes \n2-4 people in the group'''
     
@@ -437,11 +437,11 @@ My big goal is to teach as many people as I can to make Ukraine an English speak
 
 Преподаю более 3-х лет.
 Я преподаватель делового английского 👨‍🏫 в украинско-американском университете Конкордия.
-Я прошла языковые курсы в Рединге, Великобритания 🇬🇧, Эксетере, Великобритания 🇷🇧 и Торонто, Канада 🇨🇦
+Я прошел языковые курсы в Рединге, Великобритания 🇬🇧, Эксетере, Великобритания 🇷🇧 и Торонто, Канада 🇨🇦
 У меня есть BBA и MBA, так что я знаю кое-что о бизнесе, а также экономике 💵
 Я работал фермером, менеджером, переводчиком, тренером, имел собственную компанию, но моей настоящей страстью всегда было преподавание.
 
-Моя большая цель — научить как можно больше людей сделать Украину англоязычной страной.'''
+Моя большая цель — научить как можно больше людей, что бы Украина была англоязычной страной.'''
         else:
             return '''My name is Viacheslav aka Your English Bro 😎 
 
