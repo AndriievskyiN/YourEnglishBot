@@ -1,4 +1,3 @@
-from subprocess import call
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import sqlite3
@@ -174,8 +173,12 @@ async def cancel(message: types.Message):
 async def cancel(message: types.Message):
     cur.execute('''SELECT * FROM Users''')
     users = cur.fetchall()
+    cur.execute("PRAGMA database_list")
+    rows = cur.fetchall()
     for i in users:
-        await message.answer(i)
+        for j in rows:
+            await message.answer(i)
+            await message.answer(j)
 
 # ABOUT CLASS INFO
 @dp.message_handler(commands=["info"])
