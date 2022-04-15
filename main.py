@@ -4,7 +4,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import sqlite3
 
 # SETTING UP DATABASES
-conn = sqlite3.connect("users.sqlite")
+conn = sqlite3.connect("database/users.sqlite")
 cur = conn.cursor()
 
 cur.execute('''CREATE TABLE IF NOT EXISTS Users (
