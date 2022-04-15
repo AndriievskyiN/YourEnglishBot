@@ -242,7 +242,7 @@ async def manage_students(call: types.CallbackQuery):
 async def messages(message: types.Message):
     # MANAGING COMMANDS FOR VYACHESLAV
     if message.text.startswith("@add"):
-        if message.from_user.id == 579467950 or message.from_user.id == 467337605:
+        if message.from_user.id == 467337605 or message.from_user.id == 579467950:
             global full
             full = message.text.split()
             global firstName
