@@ -1,24 +1,30 @@
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-import sqlite3
+import psycopg2
 
 # SETTING UP DATABASES
-conn = sqlite3.connect("users.sqlite")
-cur = conn.cursor()
+conn = psycopg2.connect(
+    host = "ec2-23-20-224-166.compute-1.amazonaws.com",
+    dbname = "d1jp2pb9ar87ii",
+    user = "knovjuvpathzmp",
+    password = "c42c064b4457b6c474c0fdf73b1b7f7011692fe10000a809f2ddb2965f5538d6",
+    port = 5432
+)
 
+cur = conn.cursor()
 cur.execute('''CREATE TABLE IF NOT EXISTS Users (
-    id INTEGER NOT NULL PRIMARY KEY UNIQUE,
-    name TEXT,
-    lastName TEXT,
-    lang
-)''')
+    id INTEGER NOT NULL PRIMARY KEY,
+    name VARCHAR (100),
+    lastName VARCHAR (100),
+    lang VARCHAR (5)
+);''')
 
 cur.execute('''CREATE TABLE IF NOT EXISTS Schedule (
-   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-   firstName TEXT,
-   lastName TEXT,
-   day TEXT,
-   time TEXT
+   id  SERIAL NOT NULL PRIMARY KEY,
+   firstName VARCHAR (100),
+   lastName VARCHAR (100),
+   day VARCHAR (10),
+   time VARCHAR (5)
 )''')
 conn.commit()
 
@@ -86,7 +92,7 @@ ioptionsru = InlineKeyboardMarkup().add(iindru).add(iminigroupru).add(igroupru).
 # START COMMAND
 @dp.message_handler(commands=["start"])
 async def welcome(message: types.Message):
-    cur.execute('''SELECT lang FROM Users WHERE id = ?''', (message.from_user.id,))
+    cur.execute('''SELECT lang FROM Users WHERE id = %s''', (message.from_user.id,))
     lang = cur.fetchone()
 
     if lang == "eng":
@@ -99,8 +105,10 @@ async def welcome(message: types.Message):
         await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters /help")
 
 
-    cur.execute('''INSERT OR IGNORE INTO Users (id,name, lastName)
-        VALUES (?,?,?)''',(message.from_user.id, message.from_user.first_name, message.from_user.last_name))
+    cur.execute('''INSERT INTO Users (id,name, lastName)
+        VALUES (%s,%s,%s)
+        ON CONFLICT (id) 
+            DO NOTHING''',(message.from_user.id, message.from_user.first_name, message.from_user.last_name))
     conn.commit()
 
 # LANG COMMAND
@@ -121,8 +129,11 @@ async def changeLang(call: types.CallbackQuery):
         await call.message.delete()
         await call.message.answer("Договорились!")
 
-    cur.execute('''INSERT OR REPLACE INTO Users (id, name, lastName, lang)
-        VALUES (?,?,?,?)''', (call.from_user.id,call.from_user.first_name, call.from_user.last_name, call.data))
+    cur.execute('''INSERT INTO Users (id, name, lastName, lang)
+        VALUES (%s,%s,%s,%s)
+            ON CONFLICT (id)
+                DO UPDATE 
+                    SET name = EXCLUDED.name, lastName = EXCLUDED.lastName, lang = EXCLUDED.lang''', (call.from_user.id,call.from_user.first_name, call.from_user.last_name, call.data))
     conn.commit()
 
 # HELP COMMAND
@@ -256,8 +267,10 @@ async def messages(message: types.Message):
 @dp.callback_query_handler(text=["yesb", "nob"])
 async def uSure(call: types.CallbackQuery):
     if call.data == "yesb":
-        cur.execute('''INSERT OR REPLACE INTO Schedule (firstName, lastName, day, time)
-            VALUES (?,?,?,?)''',(firstName, lastName, day, hour))
+        cur.execute('''INSERT INTO Schedule (firstName, lastName, day, time)
+            VALUES (%s,%s,%s,%s)
+                CONFLICT ON (id)
+                    DO NOTHING''',(firstName, lastName, day, hour))
         conn.commit()
         await call.message.delete()
         await call.message.answer(replyVyacheslav("vyacheslav_add", call.from_user.id, full))
@@ -267,7 +280,7 @@ async def uSure(call: types.CallbackQuery):
         await call.message.answer(replyVyacheslav("nob", call.from_user.id))
 
 def responses(command, id):
-    cur.execute('''SELECT lang FROM Users WHERE id = ?''',(id,))
+    cur.execute('''SELECT lang FROM Users WHERE id = %s''',(id,))
     lang = cur.fetchone()[0]
 
     if str(command) == "help_command":
@@ -473,7 +486,7 @@ My big goal is to teach as many people as I can to make Ukraine an English speak
 
 
 def optionsInfo(id):
-    cur.execute('''SELECT lang FROM Users WHERE id = ?''', (id,))
+    cur.execute('''SELECT lang FROM Users WHERE id = %s''', (id,))
     lang = cur.fetchone()[0]
 
     if lang == "eng":
@@ -487,7 +500,7 @@ def optionsInfo(id):
 
 
 def optionsKeyboard(id):
-    cur.execute('''SELECT lang FROM Users WHERE id = ?''', (id,))
+    cur.execute('''SELECT lang FROM Users WHERE id = %s''', (id,))
     lang = cur.fetchone()[0]
 
     if lang == "eng":
@@ -500,11 +513,11 @@ def optionsKeyboard(id):
         return optionseng
 
 def replyVyacheslav(*args):
-    cur.execute('''SELECT lang FROM Users WHERE id = ?''', (args[1],))
+    cur.execute('''SELECT lang FROM Users WHERE id = %s''', (args[1],))
     lang = cur.fetchone()[0]
 
     if args[0] == "vyacheslav_add":
-        cur.execute('''SELECT day, time FROM Schedule WHERE firstName = ? and lastName = ?''',(str(args[2][1]).capitalize(),str(args[2][2]).capitalize()))
+        cur.execute('''SELECT day, time FROM Schedule WHERE firstName = %s and lastName = %s''',(str(args[2][1]).capitalize(),str(args[2][2]).capitalize()))
         global day
         day, hour = cur.fetchall()[-1]
         if lang == "eng":
@@ -589,7 +602,7 @@ def VyacheslavStudents(id):
     students = []
     cur.execute("SELECT * FROM Schedule")
     classes = cur.fetchall()
-    cur.execute("SELECT lang FROM Users WHERE id = ?",(id,))
+    cur.execute("SELECT lang FROM Users WHERE id = %s",(id,))
     lang = cur.fetchone()[0]
 
     for i in classes:
@@ -606,7 +619,7 @@ def VyacheslavStudents(id):
     return students
 
 def yesnoKeyboard(id):
-    cur.execute("SELECT lang FROM Users WHERE id = ?", (id,))
+    cur.execute("SELECT lang FROM Users WHERE id = %s", (id,))
     lang = cur.fetchone()[0]
 
     if lang == "eng":
