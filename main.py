@@ -184,12 +184,8 @@ async def cancel(message: types.Message):
 async def cancel(message: types.Message):
     cur.execute('''SELECT * FROM Users''')
     users = cur.fetchall()
-    cur.execute("PRAGMA database_list")
-    rows = cur.fetchall()
     for i in users:
-        for j in rows:
-            await message.answer(i)
-            await message.answer(j)
+        await message.answer(i)
 
 # ABOUT CLASS INFO
 @dp.message_handler(commands=["info"])
@@ -268,9 +264,7 @@ async def messages(message: types.Message):
 async def uSure(call: types.CallbackQuery):
     if call.data == "yesb":
         cur.execute('''INSERT INTO Schedule (firstName, lastName, day, time)
-            VALUES (%s,%s,%s,%s)
-                CONFLICT ON (id)
-                    DO NOTHING''',(firstName, lastName, day, hour))
+            VALUES (%s,%s,%s,%s)''',(firstName, lastName, day, hour))
         conn.commit()
         await call.message.delete()
         await call.message.answer(replyVyacheslav("vyacheslav_add", call.from_user.id, full))
