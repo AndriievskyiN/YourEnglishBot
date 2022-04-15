@@ -1,5 +1,7 @@
+from re import S
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from matplotlib.pyplot import text
 import psycopg2
 
 # SETTING UP DATABASES
@@ -182,10 +184,13 @@ async def cancel(message: types.Message):
 # TEST
 @dp.message_handler(commands=["test"])
 async def cancel(message: types.Message):
-    cur.execute('''SELECT * FROM Users''')
-    users = cur.fetchall()
-    for i in users:
-        await message.answer(i)
+    if message.from_user.id == 579467950:
+        cur.execute('''SELECT * FROM Users''')
+        users = cur.fetchall()
+        for i in users:
+            await message.answer(i)
+    else: 
+        await message.answer(responses("", message.from_user.id))
 
 # ABOUT CLASS INFO
 @dp.message_handler(commands=["info"])
@@ -214,14 +219,27 @@ async def manage_classinfo(call: types.CallbackQuery):
 @dp.message_handler(commands=["students"])
 async def students(message: types.Message):
     if message.from_user.id == 579467950 or message.from_user.id == 467337605:
-        count = 0
-        for i in VyacheslavStudents(message.from_user.id):
-            await message.answer(i)     
-            await message.answer("--------------------------")   
-            count += 1
-        await message.answer(replyVyacheslav("show_count",message.from_user.id, count))
+        await message.answer(replyVyacheslav("students_command",message.from_user.id), reply_markup=studentsKeyboard(message.from_user.id))
     else:
         await message.answer(responses(message.text, message.from_user.id))
+
+
+# MANAGING STUDENTS BUTTONS
+@dp.callback_query_handler(text=["all","mon","tue","wed","thu","fri","sat","sun","gb"])
+async def manage_students(call: types.CallbackQuery):
+    if call.data == "gb":
+        await call.message.delete()
+    else:
+        count = 0
+        await call.message.delete()
+        print(VyacheslavStudents(call.from_user.id, call.data))
+        for i in VyacheslavStudents(call.from_user.id, call.data):
+            print(i)
+            await call.message.answer(i)
+            await call.message.answer("--------------------------------")
+            count += 1
+        await call.message.answer(replyVyacheslav("show_count", call.from_user.id,count))
+
 
 # MANAGING REGULAR MESSAGES
 @dp.message_handler()
@@ -592,12 +610,47 @@ def replyVyacheslav(*args):
         else:
             return f"Total number of classes: {args[2]}"
 
-def VyacheslavStudents(id):
+    elif args[0] == "students_command":
+        if lang == "eng":
+            return "Select what day you want to view"
+        elif lang == "ukr":
+            return "Виберіть день, який ви хочете переглянути"
+        elif lang == "ru":
+            return "Выберите, какой день вы хотите просмотреть"
+        else:
+            return "Select what day you want to view"
+
+def VyacheslavStudents(id,option):
     students = []
-    cur.execute("SELECT * FROM Schedule")
-    classes = cur.fetchall()
     cur.execute("SELECT lang FROM Users WHERE id = %s",(id,))
     lang = cur.fetchone()[0]
+    
+    print(option)
+    if option == "all":
+        cur.execute("SELECT * FROM Schedule")
+        classes = cur.fetchall()
+    elif option == "mon":
+        cur.execute("SELECT * FROM Schedule WHERE day = 'monday'")
+        classes = cur.fetchall()
+    elif option == "tue":
+        cur.execute("SELECT * FROM Schedule WHERE day = 'tuesday'")
+        classes = cur.fetchall()
+    elif option == "wed":
+        cur.execute("SELECT * FROM Schedule WHERE day = 'wednesday'")
+        classes = cur.fetchall()
+        print(classes)
+    elif option == "thu":
+        cur.execute("SELECT * FROM Schedule WHERE day = 'thursday'")
+        classes = cur.fetchall()
+    elif option == "fri":
+        cur.execute("SELECT * FROM Schedule WHERE day = 'friday'")
+        classes = cur.fetchall()
+    elif option == "sat":
+        cur.execute("SELECT * FROM Schedule WHERE day = 'saturday'")
+        classes = cur.fetchall()
+    elif option == "sun":
+        cur.execute("SELECT * FROM Schedule WHERE day = 'sunday'")
+        classes = cur.fetchall()  
 
     for i in classes:
         if lang == "eng":
@@ -719,7 +772,107 @@ def translate(lang, day):
         elif str(day) == "неділя":
             day = "Sunday"
 
-    return day
+    return day.capitalize()
+
+
+def studentsKeyboard(id):
+    all = InlineKeyboardButton(text=str(textOptions(id, "all")), callback_data="all")
+    monday = InlineKeyboardButton(text=str(textOptions(id, "mon")), callback_data="mon")
+    tuesday = InlineKeyboardButton(text=str(textOptions(id, "tue")), callback_data="tue")
+    wednesday = InlineKeyboardButton(text=str(textOptions(id, "wed")), callback_data="wed")
+    thursday = InlineKeyboardButton(text=str(textOptions(id, "thu")), callback_data="thu")
+    friday = InlineKeyboardButton(text=str(textOptions(id, "fri")), callback_data="fri")
+    saturday = InlineKeyboardButton(text=str(textOptions(id, "sat")), callback_data="sat")
+    sunday = InlineKeyboardButton(text=str(textOptions(id, "sun")), callback_data="sun")
+    gb = InlineKeyboardButton(text=str(textOptions(id, "gb")), callback_data="gb")
+
+    daysKeyboard = InlineKeyboardMarkup().add(all).add(monday, tuesday).add(wednesday, thursday).add(friday, saturday).add(sunday).add(gb)
+    return daysKeyboard
+
+def textOptions(id,day):
+    cur.execute('''SELECT lang FROM Users WHERE id = %s''', (id,))
+    lang = cur.fetchone()[0]
+
+    if lang == "eng":
+        if day == "all":
+            return "All"
+        elif day == "mon":
+            return "Monday"
+        elif day == "tue":
+            return "Tuesday"
+        elif day == "wed":
+            return "Wednesday"
+        elif day == "thu":
+            return "Thursday"
+        elif day == "fri":
+            return "Friday"
+        elif day == "sat":
+            return "Saturday"
+        elif day == "sun":
+            return "Sunday"
+        elif day == "gb":
+            return "⬅️Go back"
+    
+    elif lang == "ukr":
+        if day == "all":
+            return "Всі"
+        elif day == "mon":
+            return "Понеділок"
+        elif day == "tue":
+            return "Вівторок"
+        elif day == "wed":
+            return "Середа"
+        elif day == "thu":
+            return "Четвер"
+        elif day == "fri":
+            return "П'ятниця"
+        elif day == "sat":
+            return "Субота"
+        elif day == "sun":
+            return "Неділя"
+        elif day == "gb":
+            return "⬅️Повернутися"
+        
+    elif lang == "ru":
+        if day == "all":
+            return "Все"
+        elif day == "mon":
+            return "Понедельник"
+        elif day == "tue":
+            return "Вторник"
+        elif day == "wed":
+            return "Среда"
+        elif day == "thu":
+            return "Четверг"
+        elif day == "fri":
+            return "Пятница"
+        elif day == "sat":
+            return "Суббота"
+        elif day == "sun":
+            return "Воскресенье"
+        elif day == "gb":
+            return "⬅️Вернуться"
+
+    else:
+        if day == "all":
+            return "All"
+        elif day == "mon":
+            return "Monday"
+        elif day == "tue":
+            return "Tuesday"
+        elif day == "wed":
+            return "Wednesday"
+        elif day == "thu":
+            return "Thursday"
+        elif day == "fri":
+            return "Friday"
+        elif day == "sat":
+            return "Saturday"
+        elif day == "sun":
+            return "Sunday"
+        elif day == "gb":
+            return "⬅️Go back"
+
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
