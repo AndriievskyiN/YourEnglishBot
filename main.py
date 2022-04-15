@@ -1,7 +1,5 @@
-from re import S
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from matplotlib.pyplot import text
 import psycopg2
 
 # SETTING UP DATABASES
@@ -232,9 +230,7 @@ async def manage_students(call: types.CallbackQuery):
     else:
         count = 0
         await call.message.delete()
-        print(VyacheslavStudents(call.from_user.id, call.data))
         for i in VyacheslavStudents(call.from_user.id, call.data):
-            print(i)
             await call.message.answer(i)
             await call.message.answer("--------------------------------")
             count += 1
@@ -625,7 +621,6 @@ def VyacheslavStudents(id,option):
     cur.execute("SELECT lang FROM Users WHERE id = %s",(id,))
     lang = cur.fetchone()[0]
     
-    print(option)
     if option == "all":
         cur.execute("SELECT * FROM Schedule")
         classes = cur.fetchall()
@@ -638,7 +633,6 @@ def VyacheslavStudents(id,option):
     elif option == "wed":
         cur.execute("SELECT * FROM Schedule WHERE day = 'wednesday'")
         classes = cur.fetchall()
-        print(classes)
     elif option == "thu":
         cur.execute("SELECT * FROM Schedule WHERE day = 'thursday'")
         classes = cur.fetchall()
