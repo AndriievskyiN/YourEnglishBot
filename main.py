@@ -246,37 +246,36 @@ async def messages(message: types.Message):
             global full
             full = message.text.split()
             global firstName
-            firstName = full[1].capitalize()
+            firstName = full[1].lower()
             global lastName
-            lastName = full[2].capitalize()
+            lastName = full[2].lower()
             day = full[3].lower()
             global hour
             hour = full[4]  
             global daydb
             daydb = str(translate("eng",day)).lower()
 
-            await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id, "yesb", "nob"))
+            # DUPLICATE VALIDATION
+            cur.execute('''SELECT firstName, lastName FROM Schedule WHERE day = %s and time = %s''',(daydb, hour))
+            class_ = cur.fetchone()
+            if not class_ is None:
+                await message.answer(replyVyacheslav("daytaken", message.from_user.id, class_[0],class_[1]))
+
+            else:
+                await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id, "yesb", "nob"))
 
     elif message.text.startswith("@cancel"):
         if message.from_user.id == 467337605 or message.from_user.id == 579467950:
             global splitted
             splitted = message.text.split()
 
-            firstName = splitted[1].capitalize()
-            lastName = splitted[2].capitalize()
+            firstName = splitted[1].lower()
+            lastName = splitted[2].lower()
             day = splitted[3].lower()
             hour = splitted[4]
 
             daydb = str(translate("eng", day)).lower()
-
-            # DUPLICATE VALIDATION
-            cur.execute('''SELECT firstName, lastName WHERE day = %s and hour = %s''',(daydb, hour))
-            class_ = cur.fetchone()
-            
-            if not class_ is None:
-                await message.answer(replyVyacheslav("daytaken", message.from_user.id, daydb, hour))
-            else:
-                await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id, "yesd", "nod"))
+            await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id, "yesd", "nod"))
     else:
         await message.answer(responses(message.text, message.from_user.id))
 
@@ -308,7 +307,10 @@ async def uSure(call: types.CallbackQuery):
                                 Schedule
                             WHERE firstName = %s and lastName = %s and day = %s and time = %s''', (firstName, lastName, daydb, hour))
             conn.commit()
-            await call.message.answer(replyVyacheslav("cancel_success", call.from_user.id, splitted))
+    
+            cur.execute("SELECT lang FROM Users WHERE id = %s",(call.from_user.id,))
+            lang = cur.fetchone()[0]
+            await call.message.answer(replyVyacheslav("cancel_success", call.from_user.id, (firstName.capitalize(), lastName.capitalize(), translate(lang,daydb), hour)))
 
     elif call.data == "nod":
         await call.message.delete()
@@ -556,7 +558,7 @@ def replyVyacheslav(*args):
     lang = cur.fetchone()[0]
 
     if args[0] == "vyacheslav_add":
-        cur.execute('''SELECT day, time FROM Schedule WHERE firstName = %s and lastName = %s''',(str(args[2][1]).capitalize(),str(args[2][2]).capitalize()))
+        cur.execute('''SELECT day, time FROM Schedule WHERE firstName = %s and lastName = %s''',(str(args[2][1]).lower(),str(args[2][2]).lower()))
         global day
         day, hour = cur.fetchall()[-1]
         if lang == "eng":
@@ -599,8 +601,8 @@ def replyVyacheslav(*args):
 
     elif args[0] == "vyacheslav_sure":
         message = str(args[2]).split()
-        firstName = message[1]
-        lastName = message[2]
+        firstName = str(message[1]).capitalize()
+        lastName = str(message[2]).capitalize()
         dday = str(message[3]).lower()
         hour = message[4]
 
@@ -649,23 +651,23 @@ def replyVyacheslav(*args):
 
     elif args[0] == "doesn't_exist":
         if lang == "eng":
-            return "Hmm... It seems to me that this class does not exist. Check your spelling and try again"
+            return "Hmm... It seems to me that this class does NOT exist. Check your spelling and try again"
         elif lang == "ukr":
-            return "Хм... Мені здається, що цього класу не існує. Перевірте правопис і спробуйте ще раз"
+            return "Хм... Мені здається, що цього класу НЕ існує. Перевірте правопис і спробуйте ще раз"
         elif lang == "ru":
-            return "Хм... Мне кажется, что этого класса не существует. Проверьте правильность написания и повторите попытку"
+            return "Хм... Мне кажется, что этого класса НЕ существует. Проверьте правильность написания и повторите попытку"
         else:
-            return "Hmm... It seems to me that this class does not exist. Check your spelling and try again"
+            return "Hmm... It seems to me that this class does NOT exist. Check your spelling and try again"
 
     elif args[0] == "cancel_success":
         if lang == "eng":
-            return f"{str(args[2][1]).capitalize()} {str(args[2][2]).capitalize()} on {day} {args[2][4]} has been successfully removed"
+            return f"{args[2][0]} {args[2][1]} on {args[2][2]} {args[2][3]} has been successfully removed"
         elif lang == "ukr":
-            return f"{str(args[2][1]).capitalize()} {str(args[2][2]).capitalize()} {day} {args[2][4]}... Успішно скасовано"
+            return f"{args[2][0]} {args[2][1]} {args[2][2]} {args[2][3]}... Успішно скасовано"
         elif lang == "ru":
-            return f"{str(args[2][1]).capitalize()} {str(args[2][2]).capitalize()} {day} {args[2][4]}... Удачно отменено"
+            return f"{args[2][0]} {args[2][1]} {args[2][2]} {args[2][3]}... Удачно отменено"
         else:
-            return f"{str(args[2][1]).capitalize()} {str(args[2][2]).capitalize()} on {day} {args[2][4]} has been successfully removed"
+            return f"{args[2][0]} {args[2][1]} on {args[2][2]} {args[2][3]} has been successfully removed"
     
     elif args[0] == "nod":
         if lang == "eng":
@@ -680,13 +682,13 @@ def replyVyacheslav(*args):
     # THIS CLASS ALREADY EXISTS MESSAGE
     elif args[0] == "daytaken":
         if lang == "eng":
-            return f"It seems to me that {args[1]} {args[2]} has a class at this time...Try to add a different time"
+            return f"It seems to me that {str(args[2]).capitalize()} {str(args[3]).capitalize()} has a class at this time...Try to add a different time"
         elif lang == "ukr":
-            return f"Мені здається, що {args[1]} {args[2]} має урок у цей час... Спробуйте додати інший час"
+            return f"Мені здається, що {str(args[2]).capitalize()} {str(args[3]).capitalize()} має урок у цей час... Спробуйте додати інший час"
         elif lang == "ru":
-            return f"Мне кажется, что {args[1]} {args[2]} имеет урок в это время... Попробуйте добавить другое время"
+            return f"Мне кажется, что {str(args[2]).capitalize()} {str(args[3]).capitalize()} имеет урок в это время... Попробуйте добавить другое время"
         else:
-            return f"It seems to me that {args[1]} {args[2]} has a class at this time...Try to add a different time"
+            return f"It seems to me that {str(args[2]).capitalize()} {str(args[3])} has a class at this time...Try to add a different time"
 
 def VyacheslavStudents(id,option):
     students = []
@@ -728,7 +730,7 @@ def VyacheslavStudents(id,option):
         else:
             day = str(i[3]).capitalize()
 
-        students.append(f"{i[1]} {i[2]} {day} {i[4]}")
+        students.append(f"{str(i[1]).capitalize()} {str(i[2]).capitalize()} {day} {i[4]}")
     return students
 
 def yesnoKeyboard(id, cbdatayes, cbdatano):
