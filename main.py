@@ -269,7 +269,14 @@ async def messages(message: types.Message):
 
             daydb = str(translate("eng", day)).lower()
 
-            await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id, "yesd", "nod"))
+            # DUPLICATE VALIDATION
+            cur.execute('''SELECT firstName, lastName WHERE day = %s and hour = %s''',(daydb, hour))
+            class_ = cur.fetchone()
+            
+            if not class_ is None:
+                await message.answer(replyVyacheslav("daytaken", message.from_user.id, daydb, hour))
+            else:
+                await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id, "yesd", "nod"))
     else:
         await message.answer(responses(message.text, message.from_user.id))
 
@@ -669,6 +676,17 @@ def replyVyacheslav(*args):
             return "Хорошо, этот урок не был удален... Если вы все таки хотите отменить урок, повторите процес ещё раз"
         else:
             return "Okay, this class was not removed... If you do want to cancel a class, please do the process again"
+    
+    # THIS CLASS ALREADY EXISTS MESSAGE
+    elif args[0] == "daytaken":
+        if lang == "eng":
+            return f"It seems to me that {args[1]} {args[2]} has a class at this time...Try to add a different time"
+        elif lang == "ukr":
+            return f"Мені здається, що {args[1]} {args[2]} має урок у цей час... Спробуйте додати інший час"
+        elif lang == "ru":
+            return f"Мне кажется, что {args[1]} {args[2]} имеет урок в это время... Попробуйте добавить другое время"
+        else:
+            return f"It seems to me that {args[1]} {args[2]} has a class at this time...Try to add a different time"
 
 def VyacheslavStudents(id,option):
     students = []
