@@ -439,6 +439,7 @@ def responses(command, id):
 I’ve been teaching for more than 3 years now. 
 I am a Business English teacher 👨‍🏫 in Ukrainian-American Concordia university. 
 I’ve completed language courses in \n\nReading, UK 🇬🇧 \nExeter, UK 🇬🇧 \nToronto, Canada 🇨🇦
+
 I have BBA and MBA, so I know something about business as well as economics 💵 
 I have worked as a farmer, a manager, a translator, a trainer, had my own company, but my real passion has always been teaching.
 
@@ -449,6 +450,7 @@ My big goal is to teach as many people as I can to make Ukraine an English speak
 Викладаю більше 3 років.
 Я викладач ділової англійської 👨‍🏫 в українсько-американському університеті Конкордія.
 Я закінчив мовні курси в: \n\nРедінгу, Великобританія 🇬🇧 \nЕксетер, Великобританія 🇬🇧 \nТоронто, Канада 🇨🇦
+
 У мене є BBA та MBA, тому я знаю дещо як про бізнес, так і про економіку 💵
 Я працював фермером, менеджером, перекладачем, тренером, мав власну компанію, але моєю справжньою пристрастю завжди було навчання.
 
@@ -459,6 +461,7 @@ My big goal is to teach as many people as I can to make Ukraine an English speak
 Преподаю более 3-х лет.
 Я преподаватель делового английского 👨‍🏫 в украинско-американском университете Конкордия.
 Я прошел языковые курсы в: \n\nРединге, Великобритания 🇬🇧 \nЭксетере, Великобритания 🇬🇧 \nТоронто, Канада 🇨🇦
+
 У меня есть BBA и MBA, так что я знаю кое-что о бизнесе, а также экономике 💵
 Я работал фермером, менеджером, переводчиком, тренером, имел собственную компанию, но моей настоящей страстью всегда было преподавание.
 
@@ -468,7 +471,8 @@ My big goal is to teach as many people as I can to make Ukraine an English speak
 
 I’ve been teaching for more than 3 years now. 
 I am a Business English teacher 👨‍🏫 in Ukrainian-American Concordia university. 
-I’ve completed language courses in: \n\nReading, UK 🇬🇧 \nExeter, UK 🇬🇧 \nToronto, Canada 🇨🇦 
+I’ve completed language courses in: \n\nReading, UK 🇬🇧 \nExeter, UK 🇬🇧 \nToronto, Canada 🇨🇦
+
 I have BBA and MBA, so I know something about business as well as economics 💵 
 I have worked as a farmer, a manager, a translator, a trainer, had my own company, but my real passion has always been teaching.
 
