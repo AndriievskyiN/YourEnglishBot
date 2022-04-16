@@ -394,51 +394,51 @@ def responses(command, id):
 
     elif str(command) == "indinfo":
         if lang == "eng":
-            return '''🙋‍♂️Individual lesson is a perfect option for a person who wants to prepare for passing exams like TOEFL, IELTS, ЗНО or ДПА \n \nDuration: 55 minutes \nSchedule is created based on clients preference'''
+            return '''🙋‍♂️Individual lesson is a perfect option for a person who wants to prepare for passing exams like: TOEFL, IELTS, ЗНО or ДПА \n \nDuration: 55 minutes \nSchedule is created based on clients preference \n/book'''
         elif lang == "ukr":
-            return '''🙋‍♂️Індивідуальне заняття - ідеальний варіант для людини, яка хоче підготуватися до здачі іспитів, таких як TOEFL, IELTS, ЗНО або ДПА \n \nТривалість: 55 хвилин \nРозклад створюється на основі уподобань клієнта'''
+            return '''🙋‍♂️Індивідуальне заняття - ідеальний варіант для людини, яка хоче підготуватися до здачі іспитів, таких як: TOEFL, IELTS, ЗНО або ДПА \n \nТривалість: 55 хвилин \nРозклад створюється на основі уподобань клієнта \n/book'''
         elif lang == "ru":
-            return '''🙋‍♂️Индивидуальное занятие - идеальный вариант для человека, который хочет подготовиться к сдаче таких экзаменов, как TOEFL, IELTS, ЗНО или ДПА \n \nПродолжительность: 55 минут \nРасписание составляется исходя из предпочтений клиента'''
+            return '''🙋‍♂️Индивидуальное занятие - идеальный вариант для человека, который хочет подготовиться к сдаче таких экзаменов, как: TOEFL, IELTS, ЗНО или ДПА \n \nПродолжительность: 55 минут \nРасписание составляется исходя из предпочтений клиента \n/book'''
         else:
-            return '''🙋‍♂️Individual lesson is a perfect option for a person who wants to prepare for passing exams like TOEFL, IELTS, ЗНО or ДПА \n \nDuration: 55 minutes \nSchedule is created based on clients preference'''
+            return '''🙋‍♂️Individual lesson is a perfect option for a person who wants to prepare for passing exams like: TOEFL, IELTS, ЗНО or ДПА \n \nDuration: 55 minutes \nSchedule is created based on clients preference \n/book'''
 
     elif str(command) == "groupinfo":
         if lang == "eng":
-            return '''👨‍👩‍👧‍👦Group lessons is a perfect option for a person who wants to improve: \n\n✅grammar \n📖reading \n👂listening skills along with other people. \nEveryone in the groups are of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group'''
+            return '''👨‍👩‍👧‍👦Group lessons is a perfect option for a person who wants to ,(along with other people), improve: \n\n✅grammar \n📖reading \n👂listening skills. \nEveryone in the group is of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group \n/book'''
         elif lang == "ukr":
-            return '''👨‍👩‍👧‍👦Групові заняття – ідеальний варіант для людини, яка хоче разом з іншими людьми покращити \n\n✅граматику \n📖навички читання \n👂аудіювання. \nУсі в групі однакового віку та рівня. \n \nТривалість: 55 або 115 хвилин \n5-8 осіб у групі'''
+            return '''👨‍👩‍👧‍👦Групові заняття – ідеальний варіант для людини, яка хоче разом з іншими людьми покращити \n\n✅граматику \n📖навички читання \n👂аудіювання. \nУсі в групі однакового віку та рівня. \n \nТривалість: 55 або 115 хвилин \n5-8 осіб у групі \n/book'''
         elif lang == "ru":
-            return '''👨‍👩‍👧‍👦Групповые занятия — идеальный вариант для человека, который хочет улучшить \n\n✅грамматику \n📖навыки чтения \n👂аудирования вместе с другими людьми. \nВсе в группе одного возраста и уровня. \n \nПродолжительность: 55 или 115 минут \n5-8 человек в группе'''
+            return '''👨‍👩‍👧‍👦Групповые занятия — идеальный вариант для человека, который хочет, вместе с другими людьми, улучшить \n\n✅грамматику \n📖навыки чтения \n👂аудирования. \nВсе в группе одного возраста и уровня. \n \nПродолжительность: 55 или 115 минут \n5-8 человек в группе \n/book'''
         else:
-            return '''👨‍👩‍👧‍👦Group lessons is a perfect option for a person who wants to improve \n\n✅grammar \n📖reading \n👂listening skills along with other people. \nEveryone in the groups are of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group'''
+            return '''👨‍👩‍👧‍👦Group lessons is a perfect option for a person who wants to,(along with other people), improve: \n\n✅grammar \n📖reading \n👂listening skills. \nEveryone in the group is of a similar age and level. \n \nDuration: 55 or 115 minutes \n5-8 people in the group \n/book'''
 
     elif str(command) == "mini-groupinfo":
         if lang == "eng":
-            return '''👬Mini-group lesson is a perfect option for a person who wants to improve \n\n🗣speaking \n✅grammar \n📖reading \n👂listening skills along with a small group of people. \nAll students are similar age and level. \n \nDuration: 55 or 115 minutes \n2-4 people in the group'''
+            return '''👬Mini-group lesson is a perfect option for a person who wants to, (along with a small group of people), improve: \n\n🗣speaking \n✅grammar \n📖reading \n👂listening skills. \nAll students are of a similar age and level. \n \nDuration: 55 or 115 minutes \n2-4 people in the group \n/book'''
         elif lang == "ukr":
-            return '''👬Заняття в міні-групі – ідеальний варіант для людини, яка хоче разом з невеликою групою людей покращити \n\n🗣навички говоріння \n✅граматики \n📖читання \n👂аудіювання. \nУсі учні однакового віку та рівня. \n \nТривалість: 55 або 115 хвилин \n2-4 людини в групі'''
+            return '''👬Заняття в міні-групі – ідеальний варіант для людини, яка хоче разом з невеликою групою людей покращити \n\n🗣навички говоріння \n✅граматики \n📖читання \n👂аудіювання. \nУсі учні однакового віку та рівня. \n \nТривалість: 55 або 115 хвилин \n2-4 людини в групі \n/book'''
         elif lang == "ru":
-            return '''👬Занятие в мини-группе — идеальный ваaриант для человека, который хочет улучшить \n\n🗣навыки говорения \n✅грамматики \n📖чтения \n👂аудирования вместе с небольшой группой. \nВсе ученики одного возраста и уровня. \n \nПродолжительность: 55 или 115 минут \n2-4 человека в группе'''
+            return '''👬Занятие в мини-группе — идеальный вариант для человека, который хочет, вместе с небольшой группой, улучшить: \n\n🗣навыки говорения \n✅грамматики \n📖чтения \n👂аудирования. \nВсе ученики одного возраста и уровня. \n \nПродолжительность: 55 или 115 минут \n2-4 человека в группе \n/book'''
         else:
-            return '''👬Mini-group lesson is a perfect option for a person who wants to improve \n\n🗣speaking \n✅grammar \n📖reading \n👂listening skills along with a small group of people. \nAll students are similar age and level. \n \nDuration: 55 or 115 minutes \n2-4 people in the group'''
+            return '''👬Mini-group lesson is a perfect option for a person who wants to, (along with a small group of people), improve \n\n🗣speaking \n✅grammar \n📖reading \n👂listening skills. \nAll students are of a similar age and level. \n \nDuration: 55 or 115 minutes \n2-4 people in the group \n/book'''
     
     elif str(command) == "speakinginfo":
         if lang == "eng":
-            return '''🗣Speaking club is a perfect type of the lesson where you can improve your speaking skills. \n\nFor now the speaking classes are completely free'''
+            return '''🗣Speaking club is a perfect type of lesson where you can improve your speaking skills. \n\nFor now the speaking classes are completely free \n/book'''
         elif lang == "ukr":
-            return '''🗣Speaking club – ідеальний тип уроку, де ви можете покращити свої мовленнєві навички. \n\nНаразі Speaking урокы абсолютно безкоштовні'''
+            return '''🗣Speaking club – ідеальний тип уроку, де ви можете покращити свої мовленнєві навички. \n\nНаразі Speaking уроки абсолютно безкоштовні \n/book'''
         elif lang == "ru":
-            return '''🗣Разговорный клуб — это идеальный вариант урока, на котором вы можете улучшить свои разговорные навыки. \n\nНа данный момент Speaking уроки совершенно бесплатны.'''
+            return '''🗣Разговорный клуб — это идеальный вариант урока, на котором вы можете улучшить свои разговорные навыки. \n\nНа данный момент Speaking уроки совершенно бесплатны \n/book'''
         else:
-            return '''🗣Speaking club is a perfect type of the lesson where you can improve your speaking skills. \n\nFor now the speaking classes are completely free'''
+            return '''🗣Speaking club is a perfect type of lesson where you can improve your speaking skills. \n\nFor now the speaking classes are completely free \n/book'''
 
     elif str(command) == "about_command":
         if lang == "eng":
             return '''My name is Viacheslav aka Your English Bro 😎 
 
-I’ve been teaching for more than 3 years. 
-I am Business English teacher 👨‍🏫 in Ukrainian-American Concordia university. 
-I’ve completed language courses in Reading, UK 🇬🇧, Exeter, UK 🇬🇧 and Toronto, Canada 🇨🇦 
+I’ve been teaching for more than 3 years now. 
+I am a Business English teacher 👨‍🏫 in Ukrainian-American Concordia university. 
+I’ve completed language courses in \n\nReading, UK 🇬🇧 \nExeter, UK 🇬🇧 \nToronto, Canada 🇨🇦
 I have BBA and MBA, so I know something about business as well as economics 💵 
 I have worked as a farmer, a manager, a translator, a trainer, had my own company, but my real passion has always been teaching.
 
@@ -448,17 +448,17 @@ My big goal is to teach as many people as I can to make Ukraine an English speak
 
 Викладаю більше 3 років.
 Я викладач ділової англійської 👨‍🏫 в українсько-американському університеті Конкордія.
-Я закінчив мовні курси в Редінгу, Великобританія 🇬🇧, Ексетер, Великобританія 🇬🇧 та Торонто, Канада 🇨🇦
+Я закінчив мовні курси в: \n\nРедінгу, Великобританія 🇬🇧 \nЕксетер, Великобританія 🇬🇧 \nТоронто, Канада 🇨🇦
 У мене є BBA та MBA, тому я знаю дещо як про бізнес, так і про економіку 💵
 Я працював фермером, менеджером, перекладачем, тренером, мав власну компанію, але моєю справжньою пристрастю завжди було навчання.
 
-Моя велика мета – навчити якомога більше людей зробити Україну англомовною країною'''
+Моя велика мета – навчити якомога більше людей, щоб Україна була англомовною країною'''
         elif lang == "ru":
             return '''Меня зовут Вячеслав, так же известный как Your English Bro 😎
 
 Преподаю более 3-х лет.
 Я преподаватель делового английского 👨‍🏫 в украинско-американском университете Конкордия.
-Я прошел языковые курсы в Рединге, Великобритания 🇬🇧, Эксетере, Великобритания 🇬🇧 и Торонто, Канада 🇨🇦
+Я прошел языковые курсы в: \n\nРединге, Великобритания 🇬🇧 \nЭксетере, Великобритания 🇬🇧 \nТоронто, Канада 🇨🇦
 У меня есть BBA и MBA, так что я знаю кое-что о бизнесе, а также экономике 💵
 Я работал фермером, менеджером, переводчиком, тренером, имел собственную компанию, но моей настоящей страстью всегда было преподавание.
 
@@ -466,9 +466,9 @@ My big goal is to teach as many people as I can to make Ukraine an English speak
         else:
             return '''My name is Viacheslav aka Your English Bro 😎 
 
-I’ve been teaching for more than 3 years. 
-I am Business English teacher 👨‍🏫 in Ukrainian-American Concordia university. 
-I’ve completed language courses in Reading, UK 🇬🇧, Exeter, UK 🇬🇧 and Toronto, Canada 🇨🇦 
+I’ve been teaching for more than 3 years now. 
+I am a Business English teacher 👨‍🏫 in Ukrainian-American Concordia university. 
+I’ve completed language courses in: \n\nReading, UK 🇬🇧 \nExeter, UK 🇬🇧 \nToronto, Canada 🇨🇦 
 I have BBA and MBA, so I know something about business as well as economics 💵 
 I have worked as a farmer, a manager, a translator, a trainer, had my own company, but my real passion has always been teaching.
 
