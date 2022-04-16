@@ -20,10 +20,10 @@ cur.execute('''CREATE TABLE IF NOT EXISTS Users (
 );''')
 
 cur.execute('''CREATE TABLE IF NOT EXISTS Schedule (
-   id  SERIAL NOT NULL PRIMARY KEY,
+   id SERIAL NOT NULL PRIMARY KEY,
    firstName VARCHAR (100),
    lastName VARCHAR (100),
-   day VARCHAR (10),
+   day VARCHAR (15),
    time VARCHAR (5)
 )''')
 conn.commit()
@@ -237,7 +237,7 @@ async def manage_students(call: types.CallbackQuery):
         await call.message.answer(replyVyacheslav("show_count", call.from_user.id,count))
 
 
-# MANAGING REGULAR MESSAGES
+# MANAGING REGULAR MESSAGES AND SPECIAL COMMANDS
 @dp.message_handler()
 async def messages(message: types.Message):
     # MANAGING COMMANDS FOR VYACHESLAV
@@ -249,43 +249,63 @@ async def messages(message: types.Message):
             firstName = full[1].capitalize()
             global lastName
             lastName = full[2].capitalize()
-            global day 
             day = full[3].lower()
             global hour
-            hour = full[4]
+            hour = full[4]  
+            global daydb
+            daydb = str(translate("eng",day)).lower()
 
-            if day == "понедельник" or day == "понеділок":
-                day = "monday"
-            elif day == "вторник" or day == "вівторок":
-                day = "tuesday"
-            elif day == "среда" or day == "середа":
-                day = "wednesday"
-            elif day == "четверг" or day == "четвер":
-                day = "thursday"
-            elif day == "пятница" or day == "п'ятниця":
-                day = "friday"
-            elif day == "суббота" or day == "субота":
-                day = "saturday"
-            elif day == "воскресенье" or day == "неділя":
-                day = "sunday"
+            await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id, "yesb", "nob"))
 
-            await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id))
+    elif message.text.startswith("@cancel"):
+        if message.from_user.id == 467337605 or message.from_user.id == 579467950:
+            global splitted
+            splitted = message.text.split()
+
+            firstName = splitted[1].capitalize()
+            lastName = splitted[2].capitalize()
+            day = splitted[3].lower()
+            hour = splitted[4]
+
+            daydb = str(translate("eng", day)).lower()
+
+            await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id, "yesd", "nod"))
     else:
         await message.answer(responses(message.text, message.from_user.id))
 
 # ASKING IF EVERYTHING IS CORRECT
-@dp.callback_query_handler(text=["yesb", "nob"])
+@dp.callback_query_handler(text=["yesb", "nob", "yesd", "nod"])
 async def uSure(call: types.CallbackQuery):
     if call.data == "yesb":
         cur.execute('''INSERT INTO Schedule (firstName, lastName, day, time)
-            VALUES (%s,%s,%s,%s)''',(firstName, lastName, day, hour))
+            VALUES (%s,%s,%s,%s)''',(firstName, lastName, daydb, hour))
         conn.commit()
         await call.message.delete()
         await call.message.answer(replyVyacheslav("vyacheslav_add", call.from_user.id, full))
 
-    if call.data == "nob":
+    elif call.data == "nob":
         await call.message.delete()
         await call.message.answer(replyVyacheslav("nob", call.from_user.id))
+
+    elif call.data == "yesd":
+        await call.message.delete()
+
+        cur.execute('''SELECT * FROM Schedule WHERE firstName = %s and lastName = %s and day = %s and time = %s''',(firstName, lastName, daydb, hour))
+        class_ = cur.fetchone()
+        if class_ is None:
+            await call.message.answer(replyVyacheslav("doesn't_exist", call.from_user.id)) 
+            
+        else:
+            cur.execute('''DELETE
+                            FROM
+                                Schedule
+                            WHERE firstName = %s and lastName = %s and day = %s and time = %s''', (firstName, lastName, daydb, hour))
+            conn.commit()
+            await call.message.answer(replyVyacheslav("cancel_success", call.from_user.id, splitted))
+
+    elif call.data == "nod":
+        await call.message.delete()
+        await call.message.answer(replyVyacheslav("nod", call.from_user.id))
 
 def responses(command, id):
     cur.execute('''SELECT lang FROM Users WHERE id = %s''',(id,))
@@ -620,6 +640,36 @@ def replyVyacheslav(*args):
         else:
             return "Select what day you want to view"
 
+    elif args[0] == "doesn't_exist":
+        if lang == "eng":
+            return "Hmm... It seems to me that this class does not exist. Check your spelling and try again"
+        elif lang == "ukr":
+            return "Хм... Мені здається, що цього класу не існує. Перевірте правопис і спробуйте ще раз"
+        elif lang == "ru":
+            return "Хм... Мне кажется, что этого класса не существует. Проверьте правильность написания и повторите попытку"
+        else:
+            return "Hmm... It seems to me that this class does not exist. Check your spelling and try again"
+
+    elif args[0] == "cancel_success":
+        if lang == "eng":
+            return f"{str(args[2][1]).capitalize()} {str(args[2][2]).capitalize()} on {day} {args[2][4]} has been successfully removed"
+        elif lang == "ukr":
+            return f"{str(args[2][1]).capitalize()} {str(args[2][2]).capitalize()} {day} {args[2][4]}... Успішно скасовано"
+        elif lang == "ru":
+            return f"{str(args[2][1]).capitalize()} {str(args[2][2]).capitalize()} {day} {args[2][4]}... Удачно отменено"
+        else:
+            return f"{str(args[2][1]).capitalize()} {str(args[2][2]).capitalize()} on {day} {args[2][4]} has been successfully removed"
+    
+    elif args[0] == "nod":
+        if lang == "eng":
+            return "Okay, this class was not removed... If you do want to cancel a class, please do the process again"
+        elif lang == "ukr":
+            return "Гаразд, цей урок не було видалено... Якщо ви все ж таки хочете скасувати урок, виконайте процес ще раз"
+        elif lang == "ru":
+            return "Хорошо, этот урок не был удален... Если вы все таки хотите отменить урок, повторите процес ещё раз"
+        else:
+            return "Okay, this class was not removed... If you do want to cancel a class, please do the process again"
+
 def VyacheslavStudents(id,option):
     students = []
     cur.execute("SELECT lang FROM Users WHERE id = %s",(id,))
@@ -663,19 +713,19 @@ def VyacheslavStudents(id,option):
         students.append(f"{i[1]} {i[2]} {day} {i[4]}")
     return students
 
-def yesnoKeyboard(id):
+def yesnoKeyboard(id, cbdatayes, cbdatano):
     cur.execute("SELECT lang FROM Users WHERE id = %s", (id,))
     lang = cur.fetchone()[0]
 
     if lang == "eng":
-        yesb = InlineKeyboardButton(text="Yes", callback_data="yesb")
-        nob = InlineKeyboardButton(text="No", callback_data="nob")
+        yesb = InlineKeyboardButton(text="Yes", callback_data=cbdatayes)
+        nob = InlineKeyboardButton(text="No", callback_data=cbdatano)
     elif lang == "ukr":
-        yesb = InlineKeyboardButton(text="Так", callback_data="yesb")
-        nob = InlineKeyboardButton(text="Ні", callback_data="nob")
+        yesb = InlineKeyboardButton(text="Так", callback_data=cbdatayes)
+        nob = InlineKeyboardButton(text="Ні", callback_data=cbdatano)
     elif lang == "ru":
-        yesb = InlineKeyboardButton(text="Да", callback_data="yesb")
-        nob = InlineKeyboardButton(text="Нет", callback_data="nob")
+        yesb = InlineKeyboardButton(text="Да", callback_data=cbdatayes)
+        nob = InlineKeyboardButton(text="Нет", callback_data=cbdatano)
     
     return InlineKeyboardMarkup().add(yesb).add(nob)
 
