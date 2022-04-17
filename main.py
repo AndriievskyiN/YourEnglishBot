@@ -148,13 +148,36 @@ async def manage_options(call: types.CallbackQuery):
         await call.message.answer(responses("ind_classes", call.from_user.id))
     elif call.data == "group":
         await call.message.delete()
-        await call.message.answer(responses("group_classes", call.from_user.id))
+        elgroup = InlineKeyboardButton(text=str(groupOptions(call.from_user.id, "el")), callback_data="el")
+        intgroup = InlineKeyboardButton(text=str(groupOptions(call.from_user.id, "int")), callback_data="int")
+        uintgroup = InlineKeyboardButton(text=str(groupOptions(call.from_user.id, "uint")), callback_data="uint")
+        gb = InlineKeyboardButton(text=str(textOptions(call.from_user.id, "gb")), callback_data="gb")
+
+        groupOptionsKeyboard = InlineKeyboardMarkup().add(elgroup).add(intgroup).add(uintgroup).add(gb)
+        await call.message.answer(responses("group_classes", call.from_user.id), reply_markup=groupOptionsKeyboard)
+
     elif call.data == "mini-group":
         await call.message.delete()
         await call.message.answer(responses("mini-group_classes",call.from_user.id))
     elif call.data == "speaking":
         await call.message.delete()
         await call.message.answer(responses("speaking_classes", call.from_user.id))
+
+# GROUP CLASS OPTIONS
+@dp.callback_query_handler(text=["el", "int", "uint", "gb"])
+async def chooseGroup(call: types.CallbackQuery):
+    if call.data == "gb":
+        await call.message.delete()
+        await call.message.answer(responses("book_command", call.from_user.id),reply_markup=optionsKeyboard(call.from_user.id))
+    elif call. data == "el":
+        await call.message.delete()
+        await call.message.answer(responses("el_group_choice", call.from_user.id), reply_markup=yesnoKeyboard(call.from_user.id, "yesel", "nogroup"))
+    elif call.data == "int":
+        await call.message.delete()
+        await call.message.answer(responses("int_group_choice", call.from_user.id), reply_markup=yesnoKeyboard(call.from_user.id, "yesint","nogroup"))
+    elif call.data == "uint":
+        await call.message.delete()
+        await call.message.answer(responses("uint_group_choice", call.from_user.id), reply_markup=yesnoKeyboard(call.from_user.id, "yesuint", "nogroup"))
 
 # CANCEL COMMAND
 @dp.message_handler(commands=["cancel"])
@@ -269,7 +292,7 @@ async def messages(message: types.Message):
         await message.answer(responses(message.text, message.from_user.id))
 
 # ASKING IF EVERYTHING IS CORRECT
-@dp.callback_query_handler(text=["yesb", "nob", "yesd", "nod", "yesg", "nog"])
+@dp.callback_query_handler(text=["yesb", "nob", "yesd", "nod", "yesg", "nog", "yesel", "yesint", "yesuint","nogroup"])
 async def uSure(call: types.CallbackQuery):
     if call.data == "yesb":
         cur.execute('''INSERT INTO Schedule (firstName, lastName, day, time)
@@ -327,6 +350,27 @@ async def uSure(call: types.CallbackQuery):
     elif call.data == "nog":
         await call.message.delete()
         await call.message.answer(replyVyacheslav("nog", call.from_user.id))
+
+
+    elif call.data == "yesel" or call.data == "yesint" or call.data == "yesuint":
+        cur.execute("SELECT group_id FROM Users WHERE id = %s", (call.from_user.id,))
+        if not cur.fetchone()[0] is None:
+            await call.message.delete()
+            await call.message.answer(responses("alreadyInGroup", call.from_user.id))
+        else:
+            cur.execute('''SELECT group_id FROM Groups WHERE group_type = %s''',(call.data[3:],))
+            group_id = cur.fetchone()[0]
+
+            cur.execute('''UPDATE Users
+                            SET group_id = %s
+                                WHERE id = %s''', (group_id,call.from_user.id))
+            conn.commit()
+            await call.message.delete()
+            await call.message.answer('works')
+
+    elif call.data == "nogroup":
+        await call.message.delete()
+        await call.message.answer("👌")
 
 def responses(command, id):
     cur.execute('''SELECT lang FROM Users WHERE id = %s''',(id,))
@@ -432,6 +476,16 @@ def responses(command, id):
             return "Если ты хочешь посетить speaking урок, заходи в эту группу для дополнительной информации: \nhttps://t.me/your_english_bro"
         else: 
             return "If you want to attend a speaking class, join this group for further information: \nhttps://t.me/your_english_bro"
+
+    elif str(command) == "alreadyInGroup":
+        if lang == "eng":
+            return "It seems to me that you are already in a group"
+        elif lang == "ukr":
+            return "Мені здається, ти вже в групі"
+        elif lang == "ru":
+            return "Мне кажется, ты уже в группе"
+        else:
+            return "It seems that you are already in a group"
 
     elif str(command) == "lessoninfo_command":
         if lang == "eng":
@@ -1081,6 +1135,39 @@ def textOptions(id,day):
         elif day == "gb":
             return "⬅️Go back"
 
+def groupOptions(id, group_type):
+    cur.execute("SELECT lang FROM Users WHERE id = %s", (id,))
+    lang = cur.fetchone()[0]
+
+    if group_type == "el":
+        if lang == "eng":
+            return "Elementary"
+        elif lang == "ukr":
+            return "Початкова"
+        elif lang == "ru":
+            return "Начальная"
+        else:
+            return "Elementary"
+
+    elif group_type == "int":
+        if lang == "eng":
+            return "Intermediate"
+        elif lang == "ukr":
+            return "Середня"
+        elif lang == "ru":
+            return "Средняя"
+        else:
+            return "Intermediate"
+
+    elif group_type == "uint":
+        if lang == "eng":
+            return "Upper-Intermediate"
+        elif lang == "ukr":
+            return "Вище середнього"
+        elif lang == "ru":
+            return "Выше среднего"
+        else:
+            return "Upper-Intermediate"
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
