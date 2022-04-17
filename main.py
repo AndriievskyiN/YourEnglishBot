@@ -1,3 +1,4 @@
+from locale import DAY_2
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import psycopg2
@@ -10,24 +11,7 @@ conn = psycopg2.connect(
     password = "c42c064b4457b6c474c0fdf73b1b7f7011692fe10000a809f2ddb2965f5538d6",
     port = 5432
 )
-
 cur = conn.cursor()
-cur.execute('''CREATE TABLE IF NOT EXISTS Users (
-    id INTEGER NOT NULL PRIMARY KEY,
-    name VARCHAR (100),
-    lastName VARCHAR (100),
-    lang VARCHAR (5)
-);''')
-
-cur.execute('''CREATE TABLE IF NOT EXISTS Schedule (
-   id SERIAL NOT NULL PRIMARY KEY,
-   firstName VARCHAR (100),
-   lastName VARCHAR (100),
-   day VARCHAR (15),
-   time VARCHAR (5)
-)''')
-conn.commit()
-
 
 # PRE-BUILT INPUTS
 hi_eng = ["hi", "hello", "what's up?", "what is up", "what's up", "what is up?", "hello there", "sup", "whassup", "wha sup", "hi there", "hey"]
@@ -105,7 +89,7 @@ async def welcome(message: types.Message):
         await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters /help")
 
 
-    cur.execute('''INSERT INTO Users (id,name, lastName)
+    cur.execute('''INSERT INTO Users (id,firstName, lastName)
         VALUES (%s,%s,%s)
         ON CONFLICT (id) 
             DO NOTHING''',(message.from_user.id, message.from_user.first_name, message.from_user.last_name))
@@ -129,11 +113,9 @@ async def changeLang(call: types.CallbackQuery):
         await call.message.delete()
         await call.message.answer("Договорились!")
 
-    cur.execute('''INSERT INTO Users (id, name, lastName, lang)
-        VALUES (%s,%s,%s,%s)
-            ON CONFLICT (id)
-                DO UPDATE 
-                    SET name = EXCLUDED.name, lastName = EXCLUDED.lastName, lang = EXCLUDED.lang''', (call.from_user.id,call.from_user.first_name, call.from_user.last_name, call.data))
+    cur.execute('''UPDATE Users 
+                    SET lang = %s 
+                        WHERE id = %s''', (call.data,call.from_user.id))
     conn.commit()
 
 # HELP COMMAND
@@ -276,11 +258,18 @@ async def messages(message: types.Message):
 
             daydb = str(translate("eng", day)).lower()
             await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id, "yesd", "nod"))
+
+    elif message.text.startswith("@group+"):
+        if message.from_user.id == 467337605 or message.from_user.id == 579467950:
+            global group_message
+            group_message = str(message.text).lower().split()
+            await message.answer(replyVyacheslav("group_sure", message.from_user.id, group_message), reply_markup=yesnoKeyboard(message.from_user.id, "yesg", "nog"))
+
     else:
         await message.answer(responses(message.text, message.from_user.id))
 
 # ASKING IF EVERYTHING IS CORRECT
-@dp.callback_query_handler(text=["yesb", "nob", "yesd", "nod"])
+@dp.callback_query_handler(text=["yesb", "nob", "yesd", "nod", "yesg", "nog"])
 async def uSure(call: types.CallbackQuery):
     if call.data == "yesb":
         cur.execute('''INSERT INTO Schedule (firstName, lastName, day, time)
@@ -315,6 +304,22 @@ async def uSure(call: types.CallbackQuery):
     elif call.data == "nod":
         await call.message.delete()
         await call.message.answer(replyVyacheslav("nod", call.from_user.id))
+
+    elif call.data == "yesg":
+        if len(group_message) == 6:
+            cur.execute('''INSERT INTO Groups (group_type, day1, hour1, day2, hour2)
+                            VALUES (%s,%s, %s, %s,%s)''',(group_message[1],group_message[2],group_message[3], group_message[4],group_message[5]))
+        elif len(group_message) == 8:
+            cur.execute('''INSERT INTO Groups (group_type, day1, hour1, day2, hour2, day3, hour3)
+                            VALUES (%s,%s, %s, %s,%s,%s,%s)''',(group_message[1],group_message[2],group_message[3], group_message[4],group_message[5], group_message[6],group_message[7]))
+        
+        conn.commit()
+        await call.message.delete()
+        await call.message.answer(replyVyacheslav("yesg", call.from_user.id,group_message[1]))
+
+    elif call.data == "nog":
+        await call.message.delete()
+        await call.message.answer(replyVyacheslav("nog", call.from_user.id))
 
 def responses(command, id):
     cur.execute('''SELECT lang FROM Users WHERE id = %s''',(id,))
@@ -390,6 +395,16 @@ def responses(command, id):
             return "Извините... Эта команда пока не работает :("
         else: 
             return "I'm sorry... This command doesn't work for now :("
+
+    elif str(command) == "no_group_classes":
+        if lang == "eng":
+            return "There is currently no group classes available :( Try a different type of lesson \n/book"
+        elif lang == "ukr":
+            return "Наразі немає доступних групових занять :( Спробуй інший тип уроку \n/book"
+        elif lang == "ru":
+            return "В настоящее время нет доступных групповых занятий :( Попробуй другой тип урока \n/book"
+        else:
+            return "There is currently no group classes available :( Try a different type of lesson \n/book"
 
     elif str(command) == "mini-group_classes":
         if lang == "eng":
@@ -619,6 +634,67 @@ def replyVyacheslav(*args):
             theday = translate("eng", dday)
             return f"Is everything correct? \n{firstName} {lastName} {theday} {hour}"
 
+    elif args[0] == "group_sure":
+        group_type = args[2][1]
+        if group_type == "el":
+            if lang == "eng":
+                group_type = "Elementary"
+            elif lang == "ukr":
+                group_type = "Початковий"
+            elif lang == "ru":
+                group_type = "Начальный"
+            else:
+                group_type = "Elementary"
+
+        elif group_type == "int":
+            if lang == "eng":
+                group_type = "Intermediate"
+            elif lang == "ukr":
+                group_type = "Середній"
+            elif lang == "ru":
+                group_type = "Средний"
+            else:
+                group_type = "Intermediate"
+        
+        if len(args[2]) == 6:
+            day1 = translate(lang, args[2][2])
+            hour1 = translate(lang, args[2][3])
+
+            day2 = translate(lang, args[2][4])
+            hour2 = translate(lang, args[2][5])
+
+        elif len(args[2]) == 8:
+            day1 = translate(lang, args[2][2])
+            hour1 = translate(lang, args[2][3])
+
+            day2 = translate(lang, args[2][4])
+            hour2 = translate(lang, args[2][5])
+
+            day3 = translate(lang, args[2][6])
+            hour3 = translate(lang, args[2][7])
+        
+        if lang == "eng":
+            if len(args[2]) == 6:
+                return f"Is everything correct? \nLevel: {group_type} \n1st class {day1} {hour1} \n2nd class {day2} {hour2} \n"
+            elif len(args[2]) == 8:
+                return f"Is everything correct? \nLevel: {group_type} \n1st class {day1} {hour1} \n2nd class {day2} {hour2} \n3rd class {day3} {hour3} \n"
+        elif lang == "ukr":
+            if len(args[2]) == 6:
+                return f"Все правильно? \nРівень: {group_type} \n1й урок {day1} {hour1} \n2й урок {day2} {hour2} \n"
+            elif len(args[2]) == 8:
+                return f"Все правильно? \nРівень: {group_type} \n1й урок {day1} {hour1} \n2й урок {day2} {hour2} \n3й урок {day3} {hour3} \n"
+        elif lang == "ru":
+            if len(args[2]) == 6:
+                return f"Всё правильно? \nУровень: {group_type} \n1й урок {day1} {hour1} \n2й урок {day2} {hour2} \n"
+            elif len(args[2]) == 8:
+                return f"Всё правильно? \nУровень: {group_type} \n1й урок {day1} {hour1} \n2й урок {day2} {hour2} \n3й урок {day3} {hour3} \n"
+        else:
+            if len(args[2]) == 6:
+                return f"Is everything correct? \nLevel: {group_type} \n1st class {day1} {hour1} \n2nd class {day2} {hour2} \n"
+            elif len(args[2]) == 8:
+                return f"Is everything correct? \nLevel: {group_type} \n1st class {day1} {hour1} \n2nd class {day2} {hour2} \n3rd class {day3} {hour3} \n"
+
+    # REPLYING WHEN NOT SURE (WHEN ADDING A CLASS)
     elif args[0] == "nob":
         if lang == "eng":
             return "Okay, this class was not added... If you want to change something and add a class again, please type the same command, and make sure everything is correct😁"
@@ -678,6 +754,36 @@ def replyVyacheslav(*args):
             return "Хорошо, этот урок не был удален... Если вы все таки хотите отменить урок, повторите процес ещё раз"
         else:
             return "Okay, this class was not removed... If you do want to cancel a class, please do the process again"
+
+    elif args[0] == "yesg":
+        if lang == "eng":
+            if args[2] == "int":
+                group_type = "Intermediate"
+            elif args[2] == "el":
+                group_type = "Elementary"
+            return f"Great! The {group_type} group was added successfully!"
+        elif lang == "ukr":
+            if args[2] == "int":
+                group_type = "Середня"
+            elif args[2] == "el":
+                group_type = "Початкова"
+            return f"Чудово! {group_type} група додана успішно!"
+        elif lang == "ru":
+            if args[2] == "int":
+                group_type = "Средняя"
+            elif args[2] == "el":
+                group_type = "Начальная"
+            return f"Отлично! {group_type} группа добавлена удачно!"          
+
+    elif args[0] == "nog":
+        if lang == "eng":
+            return "Okay, this group was not added... If you do want to add a group, please repeat the process again"
+        elif lang == "ukr":
+            return "Гаразд, ця група не була додана... Якщо ви все ж таки хочете додати групу, виконайте процес ще раз"
+        elif lang == "ru":
+            return "Хорошо, эта группа не была добавлена... Если вы все таки хотите добавать группу, повторите процес ещё раз"
+        else:
+            return "Okay, this group was not added... If you do want to add a group, please repeat the process again"
     
     # THIS CLASS ALREADY EXISTS MESSAGE
     elif args[0] == "daytaken":
