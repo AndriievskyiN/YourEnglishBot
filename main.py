@@ -306,16 +306,23 @@ async def uSure(call: types.CallbackQuery):
         await call.message.answer(replyVyacheslav("nod", call.from_user.id))
 
     elif call.data == "yesg":
-        if len(group_message) == 6:
-            cur.execute('''INSERT INTO Groups (group_type, day1, hour1, day2, hour2)
-                            VALUES (%s,%s, %s, %s,%s)''',(group_message[1],group_message[2],group_message[3], group_message[4],group_message[5]))
-        elif len(group_message) == 8:
-            cur.execute('''INSERT INTO Groups (group_type, day1, hour1, day2, hour2, day3, hour3)
-                            VALUES (%s,%s, %s, %s,%s,%s,%s)''',(group_message[1],group_message[2],group_message[3], group_message[4],group_message[5], group_message[6],group_message[7]))
-        
-        conn.commit()
-        await call.message.delete()
-        await call.message.answer(replyVyacheslav("yesg", call.from_user.id,group_message[1]))
+        try:
+            if len(group_message) == 6:
+                cur.execute('''INSERT INTO Groups (group_type, day1, hour1, day2, hour2)
+                                VALUES (%s,%s, %s, %s,%s)''',(group_message[1],group_message[2],group_message[3], group_message[4],group_message[5]))
+            elif len(group_message) == 8:
+                cur.execute('''INSERT INTO Groups (group_type, day1, hour1, day2, hour2, day3, hour3)
+                                VALUES (%s,%s, %s, %s,%s,%s,%s)''',(group_message[1],group_message[2],group_message[3], group_message[4],group_message[5], group_message[6],group_message[7]))
+            conn.commit()
+            await call.message.delete()
+            await call.message.answer(replyVyacheslav("yesg", call.from_user.id,group_message[1]))
+
+        except: 
+            cur.execute("ROLLBACK")
+            conn.commit()   
+            await call.message.delete()
+            await call.message.answer(replyVyacheslav("groupexists", call.from_user.id))
+
 
     elif call.data == "nog":
         await call.message.delete()
@@ -656,6 +663,17 @@ def replyVyacheslav(*args):
             else:
                 group_type = "Intermediate"
         
+        elif group_type == "uint":
+            if lang == "eng":
+                group_type = "Upper-Intermediate"
+            elif lang == "ukr":
+                group_type = "Вище середнього"
+            elif lang == "ru":
+                group_type = "Выше Среднего"
+            else:
+                group_type = "Upper-Intermediate"
+
+        
         if len(args[2]) == 6:
             day1 = translate(lang, args[2][2])
             hour1 = translate(lang, args[2][3])
@@ -761,19 +779,25 @@ def replyVyacheslav(*args):
                 group_type = "Intermediate"
             elif args[2] == "el":
                 group_type = "Elementary"
+            elif args[2] == "uint":
+                group_type = "Upper-Intermediate"
             return f"Great! The {group_type} group was added successfully!"
         elif lang == "ukr":
             if args[2] == "int":
                 group_type = "Середня"
             elif args[2] == "el":
                 group_type = "Початкова"
-            return f"Чудово! {group_type} група додана успішно!"
+            elif args[2] == "uint":
+                group_type == "Вище Середнього"
+            return f'Чудово! Група "{group_type}" додана успішно!'
         elif lang == "ru":
             if args[2] == "int":
                 group_type = "Средняя"
             elif args[2] == "el":
                 group_type = "Начальная"
-            return f"Отлично! {group_type} группа добавлена удачно!"          
+            elif args[2] == "uint":
+                group_type = "Выше среднего"
+            return f'Отлично! Группа "{group_type}" группа добавлена удачно!'      
 
     elif args[0] == "nog":
         if lang == "eng":
@@ -785,6 +809,16 @@ def replyVyacheslav(*args):
         else:
             return "Okay, this group was not added... If you do want to add a group, please repeat the process again"
     
+    elif args[0] == "groupexists":
+        if lang == "eng":
+            return "It seems to me that a group for this level already exists"
+        elif lang == "ukr":
+            return "Мені здається, що група для такого рівня вже існує"
+        elif lang == "ru":
+            return "Мне кажется, группа для этого уровня уже существует"
+        else:
+            return "It seems that a group for this level already exists"
+
     # THIS CLASS ALREADY EXISTS MESSAGE
     elif args[0] == "daytaken":
         if lang == "eng":
