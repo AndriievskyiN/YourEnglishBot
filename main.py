@@ -1,4 +1,3 @@
-from locale import DAY_2
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import psycopg2
@@ -141,6 +140,9 @@ async def book(message: types.Message):
 # MANAGING BOOK OPTIONS
 @dp.callback_query_handler(text=["gback","ind","group","mini-group","speaking"])
 async def manage_options(call: types.CallbackQuery):
+    cur.execute("SELECT * FROM GROUPS")
+    groups = cur.fetchall()
+
     if call.data == "gback":
         await call.message.delete()
     elif call.data == "ind":
@@ -148,13 +150,18 @@ async def manage_options(call: types.CallbackQuery):
         await call.message.answer(responses("ind_classes", call.from_user.id))
     elif call.data == "group":
         await call.message.delete()
-        elgroup = InlineKeyboardButton(text=str(groupOptions(call.from_user.id, "el")), callback_data="el")
-        intgroup = InlineKeyboardButton(text=str(groupOptions(call.from_user.id, "int")), callback_data="int")
-        uintgroup = InlineKeyboardButton(text=str(groupOptions(call.from_user.id, "uint")), callback_data="uint")
-        gb = InlineKeyboardButton(text=str(textOptions(call.from_user.id, "gb")), callback_data="gb")
 
-        groupOptionsKeyboard = InlineKeyboardMarkup().add(elgroup).add(intgroup).add(uintgroup).add(gb)
-        await call.message.answer(responses("group_classes", call.from_user.id), reply_markup=groupOptionsKeyboard)
+        if groups == []:
+            await call.message.answer(responses("no_group_classes", call.from_user.id))
+        
+        else:
+            elgroup = InlineKeyboardButton(text=str(groupOptions(call.from_user.id, "el")), callback_data="el")
+            intgroup = InlineKeyboardButton(text=str(groupOptions(call.from_user.id, "int")), callback_data="int")
+            uintgroup = InlineKeyboardButton(text=str(groupOptions(call.from_user.id, "uint")), callback_data="uint")
+            gb = InlineKeyboardButton(text=str(textOptions(call.from_user.id, "gb")), callback_data="gb")
+
+            groupOptionsKeyboard = InlineKeyboardMarkup().add(elgroup).add(intgroup).add(uintgroup).add(gb)
+            await call.message.answer(responses("group_command", call.from_user.id), reply_markup=groupOptionsKeyboard)
 
     elif call.data == "mini-group":
         await call.message.delete()
@@ -166,18 +173,30 @@ async def manage_options(call: types.CallbackQuery):
 # GROUP CLASS OPTIONS
 @dp.callback_query_handler(text=["el", "int", "uint", "gb"])
 async def chooseGroup(call: types.CallbackQuery):
-    if call.data == "gb":
-        await call.message.delete()
-        await call.message.answer(responses("book_command", call.from_user.id),reply_markup=optionsKeyboard(call.from_user.id))
-    elif call. data == "el":
-        await call.message.delete()
-        await call.message.answer(responses("el_group_choice", call.from_user.id), reply_markup=yesnoKeyboard(call.from_user.id, "yesel", "nogroup"))
-    elif call.data == "int":
-        await call.message.delete()
-        await call.message.answer(responses("int_group_choice", call.from_user.id), reply_markup=yesnoKeyboard(call.from_user.id, "yesint","nogroup"))
-    elif call.data == "uint":
-        await call.message.delete()
-        await call.message.answer(responses("uint_group_choice", call.from_user.id), reply_markup=yesnoKeyboard(call.from_user.id, "yesuint", "nogroup"))
+    cur.execute("SELECT * FROM GROUPS")
+    groups = cur.fetchall()
+    
+    if call.data != "gb":
+        cur.execute("SELECT * FROM GROUPS WHERE group_type = %s",(call.data,))
+        schedule = cur.fetchone()
+
+        if schedule is None:
+            await call.message.delete()
+            await call.message.answer(responses("group_no_exist", call.from_user.id))
+
+    else:
+        if call.data == "gb":
+            await call.message.delete()
+            await call.message.answer(responses("book_command", call.from_user.id),reply_markup=optionsKeyboard(call.from_user.id))
+        elif call.data == "el":
+            await call.message.delete()
+            await call.message.answer(groupOptionText(call.from_user.id, call.data, groups), reply_markup=yesnoKeyboard(call.from_user.id, "yesel", "nogroup"))
+        elif call.data == "int":
+            await call.message.delete()
+            await call.message.answer(groupOptionText(call.from_user.id, call.data, groups), reply_markup=yesnoKeyboard(call.from_user.id, "yesint","nogroup"))
+        elif call.data == "uint":
+            await call.message.delete()
+            await call.message.answer(groupOptionText(call.from_user.id, call.data, groups), reply_markup=yesnoKeyboard(call.from_user.id, "yesuint", "nogroup"))
 
 # CANCEL COMMAND
 @dp.message_handler(commands=["cancel"])
@@ -193,7 +212,7 @@ async def cancel(message: types.Message):
         for i in users:
             await message.answer(i)
     else: 
-        await message.answer(responses("", message.from_user.id))
+        await message.answer(responses(message.text, message.from_user.id))
 
 # ABOUT CLASS INFO
 @dp.message_handler(commands=["info"])
@@ -226,6 +245,17 @@ async def students(message: types.Message):
     else:
         await message.answer(responses(message.text, message.from_user.id))
 
+# GROUPS COMMAND FOR VYACHESLAV
+@dp.message_handler(commands=["groups"])
+async def groups(message: types.Message):
+    if message.from_user.id == 579467950 or message.from_user.id == 467337605:
+        cur.execute("SELECT * FROM GROUPS")
+        groups = cur.fetchall()
+
+        for i in groups:
+            await message.answer(replyVyacheslav("groups_command",message.from_user.id, i))
+    else:
+        await message.answer(responses(message.text, message.from_user.id)) 
 
 # MANAGING STUDENTS BUTTONS
 @dp.callback_query_handler(text=["all","mon","tue","wed","thu","fri","sat","sun","gb"])
@@ -366,7 +396,7 @@ async def uSure(call: types.CallbackQuery):
                                 WHERE id = %s''', (group_id,call.from_user.id))
             conn.commit()
             await call.message.delete()
-            await call.message.answer('works')
+            await call.message.answer(responses('group_success', call.from_user.id))
 
     elif call.data == "nogroup":
         await call.message.delete()
@@ -437,7 +467,7 @@ def responses(command, id):
         else: 
             return "To book an individual class, please contact the teacher directly via Telegram, phone call, or Instagram \n/contact"
 
-    elif str(command) == "group_classes":
+    elif str(command) == "command_no_work":
         if lang == "eng":
             return "I'm sorry... This command doesn't work for now :("
         elif lang == "ukr":
@@ -446,6 +476,17 @@ def responses(command, id):
             return "Извините... Эта команда пока не работает :("
         else: 
             return "I'm sorry... This command doesn't work for now :("
+
+    elif str(command) == "group_no_exist":
+        if lang == "eng":
+            return "I'm sorry...This group doesn't have anything scheduled so far \nTry yourself in a different group or book another type of lesson \n/book"
+        elif lang == "ukr":
+            return "Вибач... У цій групі поки що нічого не заплановано \nСпробуй себе в іншій групі або забронюй інший тип уроку \n/book"
+        elif lang == "ru":
+            return "Извиняюсь... В этой группе пока ничего не запланировано \nПопробуй себя в другой группе или забронируй урок другого типа \n/book"
+        else:
+            return "I'm sorry...This group doesn't have anything scheduled so far \nTry yourself in a different group or book another type of lesson \n/book"
+
 
     elif str(command) == "no_group_classes":
         if lang == "eng":
@@ -537,6 +578,27 @@ def responses(command, id):
         else:
             return '''🗣Speaking club is a perfect type of lesson where you can improve your speaking skills. \n\nFor now the speaking classes are completely free \n/book'''
 
+
+    elif str(command) == "group_success":
+        if lang == "eng":
+            return "Congrats! You have successfully booked a spot!"
+        elif lang == "ukr":
+            return "Вітаємо! Ти успішно забронював місце!"
+        elif lang == "ru":
+            return "Поздравляем! Ты успешно забронировал место!"
+        else:
+            return "Congrats! You have successfully booked a spot!"
+    
+    elif str(command) == "group_command":
+        if lang == "eng":
+            return "Select a group that you would like to explore and book a spot if you like it😁"
+        elif lang == "ukr":
+            return "Вибери групу, про яку б хотів би дізнатися більше, і забронюй місце, якщо сподобається😁"
+        elif lang == "ru":
+            return "Выбери группу, про которую хотел бы узнать больше, и забронируй место, если понравиться😁"
+        else:
+            return "Select a group that you would like to explore and book a spot if you like it😁"
+
     elif str(command) == "about_command":
         if lang == "eng":
             return '''My name is Viacheslav aka Your English Bro 😎 
@@ -600,7 +662,6 @@ My big goal is to teach as many people as I can to make Ukraine an English speak
                 return "Извините... я не понимаю, что вы имеете ввиду :("
             else:
                 return "I'm sorry... I don't understand what you mean :("
-
 
 def optionsInfo(id):
     cur.execute('''SELECT lang FROM Users WHERE id = %s''', (id,))
@@ -684,16 +745,16 @@ def replyVyacheslav(*args):
 
         if lang == "eng":
             theday = translate("eng", dday)
-            return f"Is everything correct? \n{firstName} {lastName} {theday} {hour}"
+            return f"Is everything correct? \n \n{firstName} {lastName} {theday} {hour}"
         elif lang == "ukr":
             theday = translate("ukr", dday)
-            return f"Все правильно? \n{firstName} {lastName} {theday} {hour}"
+            return f"Все правильно? \n \n{firstName} {lastName} {theday} {hour}"
         elif lang == "ru":
             theday = translate("ru", dday)
-            return f"Всё правильно? \n{firstName} {lastName} {theday} {hour}"
+            return f"Всё правильно? \n \n{firstName} {lastName} {theday} {hour}"
         else: 
             theday = translate("eng", dday)
-            return f"Is everything correct? \n{firstName} {lastName} {theday} {hour}"
+            return f"Is everything correct? \n \n{firstName} {lastName} {theday} {hour}"
 
     elif args[0] == "group_sure":
         group_type = args[2][1]
@@ -747,19 +808,19 @@ def replyVyacheslav(*args):
         
         if lang == "eng":
             if len(args[2]) == 6:
-                return f"Is everything correct? \nLevel: {group_type} \n1st class {day1} {hour1} \n2nd class {day2} {hour2} \n"
+                return f"Is everything correct? \n \nLevel: {group_type} \n1st class {day1} {hour1} \n2nd class {day2} {hour2} \n"
             elif len(args[2]) == 8:
-                return f"Is everything correct? \nLevel: {group_type} \n1st class {day1} {hour1} \n2nd class {day2} {hour2} \n3rd class {day3} {hour3} \n"
+                return f"Is everything correct? \n \nLevel: {group_type} \n1st class {day1} {hour1} \n2nd class {day2} {hour2} \n3rd class {day3} {hour3} \n"
         elif lang == "ukr":
             if len(args[2]) == 6:
-                return f"Все правильно? \nРівень: {group_type} \n1й урок {day1} {hour1} \n2й урок {day2} {hour2} \n"
+                return f"Все правильно? \n \nРівень: {group_type} \n1й урок {day1} {hour1} \n2й урок {day2} {hour2} \n"
             elif len(args[2]) == 8:
-                return f"Все правильно? \nРівень: {group_type} \n1й урок {day1} {hour1} \n2й урок {day2} {hour2} \n3й урок {day3} {hour3} \n"
+                return f"Все правильно? \n \nРівень: {group_type} \n1й урок {day1} {hour1} \n2й урок {day2} {hour2} \n3й урок {day3} {hour3} \n"
         elif lang == "ru":
             if len(args[2]) == 6:
-                return f"Всё правильно? \nУровень: {group_type} \n1й урок {day1} {hour1} \n2й урок {day2} {hour2} \n"
+                return f"Всё правильно? \n \nУровень: {group_type} \n1й урок {day1} {hour1} \n2й урок {day2} {hour2} \n"
             elif len(args[2]) == 8:
-                return f"Всё правильно? \nУровень: {group_type} \n1й урок {day1} {hour1} \n2й урок {day2} {hour2} \n3й урок {day3} {hour3} \n"
+                return f"Всё правильно? \n \nУровень: {group_type} \n1й урок {day1} {hour1} \n2й урок {day2} {hour2} \n3й урок {day3} {hour3} \n"
         else:
             if len(args[2]) == 6:
                 return f"Is everything correct? \nLevel: {group_type} \n1st class {day1} {hour1} \n2nd class {day2} {hour2} \n"
@@ -883,6 +944,73 @@ def replyVyacheslav(*args):
             return f"Мне кажется, что {str(args[2]).capitalize()} {str(args[3]).capitalize()} имеет урок в это время... Попробуйте добавить другое время"
         else:
             return f"It seems to me that {str(args[2]).capitalize()} {str(args[3])} has a class at this time...Try to add a different time"
+
+    # GROUPS COMMAND 
+    elif args[0] == "groups_command":
+        groups = args[2]
+
+        if groups[1] == "el":
+            if lang == "eng":
+                group_type  = "Elementary"
+            elif lang == "ukr":
+                group_type  = "Початкова"
+            elif lang == "ru":
+                group_type = "Начальная"
+            else:
+                group_type = "Elementary"
+
+        elif groups[1] == "int":
+            if lang == "eng":
+                group_type = "Intermediate"
+            elif lang == "ukr":
+                group_type = "Середня"
+            elif lang == "ru":
+                group_type = "Средняя"
+            else:
+                group_type = "Intermediate"
+
+        elif groups[1] == "uint":
+            if lang == "eng":
+                group_type = "Upper-Intermediate"
+            elif lang == "ukr":
+                group_type = "Вище середнього"
+            elif lang == "ru":
+                group_type = "Выше среднего"
+            else:
+                group_type = "Upper-Intermediate"
+
+        firstday = translate(lang, groups[2])
+        secondday = translate(lang, groups[4])
+
+        try:
+            thirdday = translate(lang, groups[6])
+        except:
+            pass
+
+        if lang == "eng":
+            try:
+                return f"Level: {group_type} \n1st class {firstday} {groups[3]} \n2nd class {secondday} {groups[5]}  \n3rd class class {thirdday} {groups[7]}"
+            except:
+                return f"Level: {group_type} \n1st class {firstday} {groups[3]} \n2nd class {secondday} {groups[5]}  \n"
+
+        elif lang == "ukr":
+            try:
+                return f"\nРівень: {group_type} \n1й урок {firstday} {groups[3]} \n2й урок {secondday} {groups[5]} \n3й урок {thirdday} {groups[7]} \n"
+            except:
+                return f"\nРівень: {group_type} \n1й урок {firstday} {groups[3]} \n2й урок {secondday} {groups[5]} \n"
+        
+        elif lang == "ru":
+            try:
+                return f"\nУровень: {group_type} \n1й урок {firstday} {groups[3]} \n2й урок {secondday} {groups[5]} \n3й урок {thirdday} {groups[7]} \n"
+            except:
+                return f"\nУровень: {group_type} \n1й урок {firstday} {groups[3]} \n2й урок {secondday} {groups[5]} \n"
+        
+        else:
+            try:
+                return f"Level: {group_type} \n1st class {firstday} {groups[3]} \n2nd class {secondday} {groups[5]}  \n3rd class {thirdday} {groups[7]}"
+            except:
+                return f"Level: {group_type} \n1st class {firstday} {groups[3]} \n2nd class {secondday} {groups[5]}  \n"
+
 
 def VyacheslavStudents(id,option):
     students = []
@@ -1168,6 +1296,71 @@ def groupOptions(id, group_type):
             return "Выше среднего"
         else:
             return "Upper-Intermediate"
+
+def groupOptionText(id, group_type, groups):
+    cur.execute("SELECT lang FROM Users WHERE id = %s",(id,))
+    lang = cur.fetchone()[0]
+
+    cur.execute("SELECT * FROM Groups WHERE group_type = %s",(group_type,))
+    schedule = cur.fetchone()
+
+    day1 = translate(lang, schedule[2])
+    day2 = translate(lang, schedule[4])
+
+    try:
+        day3 = translate(lang, schedule[6])
+    except:
+        pass
+
+    if lang == "eng":
+        try:
+            if group_type == "el":
+                return f"This group is good for students who can understand and use familiar everyday expressions and very basic phrases aimed at the satisfaction of needs of a concrete type \n-------------------------------- \nSchedule: \n1st class {day1} {schedule[3]} \n2nd class {day2} {schedule[5]} \n3rd class {day3} {schedule[7]} \n \nDo you want to book a place in this group?"
+            elif group_type == "int":
+                return f"This group is good for students who can understand the main points of clear standard input on familiar matters regularly encountered in work, school, leisure, etc \n-------------------------------- \nSchedule: \n1st class {day1} {schedule[3]} \n2nd class {day2} {schedule[5]} \n3rd class {day3} {schedule[7]} \n \nDo you want to book a place in this group?"
+            elif group_type == "uint":
+                return f"This group is good for students who can understand the main ideas of complex text on both concrete and abstract topics, including technical discussions in their field of specialisation. \n-------------------------------- \nSchedule: \n1st class {day1} {schedule[3]} \n2nd class {day2} {schedule[5]} \n3rd class {day3} {schedule[7]} \n \nDo you want to book a place in this group?"
+        except:
+            if group_type == "el":
+                return f"This group is good for students who can understand and use familiar everyday expressions and very basic phrases aimed at the satisfaction of needs of a concrete type \n-------------------------------- \nSchedule: \n1st class {day1} {schedule[3]} \n2nd class {day2} {schedule[5]} \n \nDo you want to book a place in this group?"
+            elif group_type == "int":
+                return f"This group is good for students who can understand the main points of clear standard input on familiar matters regularly encountered in work, school, leisure, etc \n-------------------------------- \nSchedule: \n1st class {day1} {schedule[3]} \n2nd class {day2} {schedule[5]} \n \nDo you want to book a place in this group?"
+            elif group_type == "uint":
+                return f"This group is good for students who can understand the main ideas of complex text on both concrete and abstract topics, including technical discussions in their field of specialisation. \n-------------------------------- \nSchedule: \n1st class {day1} {schedule[3]} \n2nd class {day2} {schedule[5]} \n \nDo you want to book a place in this group?"
+
+    elif lang == "ukr":
+        try:
+            if group_type == "uint":
+                return f"Ця група підходить для студентів, які можуть розуміти основні ідеї складного тексту як на конкретні, так і на абстрактні теми, включаючи технічні дискусії у своїй галузі спеціалізації. \nРозклад: \n1й урок {day1} {schedule[3]} \n2й урок {day2} {schedule[5]} \n3й урок {day3} {schedule[7]}  \n \nБажаєш забронювати місце в цій групі?"
+            elif group_type == "int":
+                return f"TЦя група добре підходить для студентів, які можуть розуміти основні моменти чітких стандартних вхідних даних про знайомі питання, з якими регулярно стикаються на роботі, в школі, на відпочинку тощо. \nРозклад: \n1й урок {day1} {schedule[3]} \n2й урок {day2} {schedule[5]} \n3й урок {day3} {schedule[7]} \n \nБажаєш забронювати місце в цій групі?"
+            elif group_type == "el":
+                return f"Ця група хороша для студентів, які можуть розуміти та використовувати знайомі повсякденні вирази та найпростіші фрази, спрямовані на задоволення потреб конкретного типу. \nРозклад: \n1й урок {day1} {schedule[3]} \n2й урок {day2} {schedule[5]} \n3й урок {day3} {schedule[7]}  \n \nБажаєш  забронювати місце в цій групі?"
+        except:
+            pass
+
+    elif lang == "ru":
+        try:
+            if group_type == "el":
+                return f"Эта группа хороша для студентов, которые могут понимать и использовать знакомые повседневные выражения и самые простые фразы, направленные на удовлетворение потребностей конкретного типа. \n-------------------------------- \nРасписание: \n1й урок {day1} {schedule[3]} \n2й урок {day2} {schedule[5]} \n3й урок {day3} {schedule[7]} \n \nХочешь забронировать место в этой группе?"
+            elif group_type == "int":
+                return f"Эта группа хороша для учащихся, которые могут понять основные моменты четкого стандартного ввода по знакомым вопросам, регулярно возникающим на работе, в школе, на отдыхе и т.д. \n-------------------------------- \nРасписание: \n1й урок {day1} {schedule[3]} \n2й урок {day2} {schedule[5]} \n3й урок {day3} {schedule[7]} \n \nХочешь забронировать место в этой группе?"
+            elif group_type == "uint":
+                return f"Эта группа подходит для студентов, которые могут понять основные идеи сложного текста как по конкретным, так и по абстрактным темам, включая технические дискуссии в своей области специализации. \n-------------------------------- \nРасписание: \n1й урок {day1} {schedule[3]} \n2й урок {day2} {schedule[5]} \n3й урок {day3} {schedule[7]} \n \nХочешь забронировать место в этой группе?"
+        except:
+            if group_type == "el":
+                return f"Эта группа хороша для студентов, которые могут понимать и использовать знакомые повседневные выражения и самые простые фразы, направленные на удовлетворение потребностей конкретного типа. \n-------------------------------- \nРасписание: \n1й урок {day1} {schedule[3]} \n2й урок {day2} {schedule[5]}\n \nХочешь забронировать место в этой группе?"
+            elif group_type == "int":
+                return f"Эта группа хороша для учащихся, которые могут понять основные моменты четкого стандартного ввода по знакомым вопросам, регулярно возникающим на работе, в школе, на отдыхе и т.д. \n-------------------------------- \nРасписание: \n1й урок {day1} {schedule[3]} \n2й урок {day2} {schedule[5]} \n \nХочешь забронировать место в этой группе?"
+            elif group_type == "uint":
+                return f"Эта группа подходит для студентов, которые могут понять основные идеи сложного текста как по конкретным, так и по абстрактным темам, включая технические дискуссии в своей области специализации. \n-------------------------------- \nРасписание: \n1й урок {day1} {schedule[3]} \n2й урок {day2} {schedule[5]} \n \nХочешь забронировать место в этой группе?"
+    else:
+        if group_type == "el":
+            return "This group is good for students who can understand and use familiar everyday expressions and very basic phrases aimed at the satisfaction of needs of a concrete type. \n \nDo you want to book a place in this group?"
+        elif group_type == "int":
+            return "This group is good for students who can understand the main points of clear standard input on familiar matters regularly encountered in work, school, leisure, etc. \n \nDo you want to book a place in this group?"
+        elif group_type == "uint":
+            return "This group is good for students who can understand the main ideas of complex text on both concrete and abstract topics, including technical discussions in their field of specialisation. \n \nDo you want to book a place in this group?"
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
