@@ -1,6 +1,7 @@
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import psycopg2
+from pyrsistent import v
 
 # SETTING UP DATABASES
 conn = psycopg2.connect(
@@ -252,6 +253,9 @@ async def groups(message: types.Message):
         cur.execute("SELECT * FROM GROUPS")
         groups = cur.fetchall()
 
+        if groups == []:
+            await message.answer(replyVyacheslav("no_groups", message.from_user.id))
+
         for i in groups:
             await message.answer(replyVyacheslav("groups_command",message.from_user.id, i))
     else:
@@ -317,12 +321,18 @@ async def messages(message: types.Message):
             global group_message
             group_message = str(message.text).lower().split()
             await message.answer(replyVyacheslav("group_sure", message.from_user.id, group_message), reply_markup=yesnoKeyboard(message.from_user.id, "yesg", "nog"))
+    
+    elif message.text.startswith("@group-"):
+        global group_type_to_delete
+        group_type_to_delete = message.text.lower().split()[1]
 
+        if message.from_user.id == 467337605 or message.from_user.id == 579467950:
+            await message.answer(replyVyacheslav("group_delete_sure", message.from_user.id, group_type_to_delete), reply_markup=yesnoKeyboard(message.from_user.id, "yesgd", "nogroup"))
     else:
         await message.answer(responses(message.text, message.from_user.id))
 
 # ASKING IF EVERYTHING IS CORRECT
-@dp.callback_query_handler(text=["yesb", "nob", "yesd", "nod", "yesg", "nog", "yesel", "yesint", "yesuint","nogroup"])
+@dp.callback_query_handler(text=["yesb", "nob", "yesd", "nod", "yesg", "nog", "yesel", "yesint", "yesuint","nogroup","yesgd"])
 async def uSure(call: types.CallbackQuery):
     if call.data == "yesb":
         cur.execute('''INSERT INTO Schedule (firstName, lastName, day, time)
@@ -397,6 +407,22 @@ async def uSure(call: types.CallbackQuery):
             conn.commit()
             await call.message.delete()
             await call.message.answer(responses('group_success', call.from_user.id))
+
+    elif call.data == "yesgd":
+
+        cur.execute("SELECT * FROM GROUPS WHERE group_type = %s",(group_type_to_delete,))
+        thegroup = cur.fetchone()
+        
+        if thegroup is None:
+            await call.message.delete()
+            await call.message.answer(replyVyacheslav("group_delete_no_exist", call.from_user.id))
+
+        else:
+            cur.execute("DELETE FROM GROUPS WHERE group_type = %s",(group_type_to_delete,))
+            conn.commit()
+
+            await call.message.delete()
+            await call.message.answer(replyVyacheslav("group_deleted", call.from_user.id, group_type_to_delete))
 
     elif call.data == "nogroup":
         await call.message.delete()
@@ -1011,6 +1037,51 @@ def replyVyacheslav(*args):
             except:
                 return f"Level: {group_type} \n1st class {firstday} {groups[3]} \n2nd class {secondday} {groups[5]}  \n"
 
+    # REPLYING TO NOT HAVING ANY GROUPS
+    elif args[0] == "no_groups":
+        if lang == "eng":
+            return "It seems to me that there are no groups at the moment"
+        elif lang == "ukr":
+            return "Мені здається, що груп зараз немає"
+        elif lang == "ru":
+            return "Мне кажется, что групп на данный момент нет"
+        else:
+            return "It seems to me that there are no groups at the moment"
+
+    # REPLYING TO DELETING GROUPS
+    elif args[0] == "group_deleted" or args[0] == "group_delete_sure":
+        global group_type_to_delete
+        group_type_delete = fullGroupType(lang, args[2])
+
+        if args[0] == "group_deleted":
+            if lang == "eng":
+                return f"{group_type_delete} has been successfully removed!"
+            elif lang == "ukr":
+                return f'Група "{group_type_delete}" успішно видалена!'
+            elif lang == "ru":
+                return f'Группа "{group_type_delete}" удачно удалена!'
+            else:
+                return f"{group_type_delete} has been successfully removed!"
+
+        elif args[0] == "group_delete_sure":
+            if lang == "eng":
+                return f"Are you sure you want to remove {group_type_delete} group?"
+            elif lang == "ukr":
+                return f'Ви впевнені, що хочете видалити групу "{group_type_delete}" ?'
+            elif lang == "ru":
+                return f'Вы уверены, что хотите удалить группу "{group_type_delete}" ?'
+            else:
+                return f"Are you sure you want to remove {group_type_delete} group?"
+
+    elif args[0] == "group_delete_no_exist":
+        if lang == "eng":
+            return "This group is already deleted or doesn't exist"
+        elif lang == "ukr":
+            return "Ця група вже видалена або не існує"
+        elif lang == "ru":
+            return "Эта уже группа удалена или не существует"
+        else:
+            return "This group is already deleted or doesn't exist"
 
 def VyacheslavStudents(id,option):
     students = []
@@ -1361,6 +1432,43 @@ def groupOptionText(id, group_type, groups):
             return "This group is good for students who can understand the main points of clear standard input on familiar matters regularly encountered in work, school, leisure, etc. \n \nDo you want to book a place in this group?"
         elif group_type == "uint":
             return "This group is good for students who can understand the main ideas of complex text on both concrete and abstract topics, including technical discussions in their field of specialisation. \n \nDo you want to book a place in this group?"
+
+def fullGroupType(lang, group_type):
+    if group_type == "el":
+        if lang == "eng":
+            full_group_type = "Elementary"
+        elif lang == "ukr":
+            full_group_type = "Початкова"
+        elif lang == "ru":
+            full_group_type = "Начальная"
+        else:
+            full_group_type = "Elementary"
+
+        return full_group_type
+        
+    elif group_type == "int":
+        if lang == "eng":
+            full_group_type = "Intermediate"
+        elif lang == "ukr":
+            full_group_type = "Середня"
+        elif lang == "ru":
+            full_group_type = "Средняя"
+        else:
+            full_group_type = "Intermediate"
+    
+        return full_group_type
+
+    elif group_type == "uint":
+        if lang == "eng":
+            full_group_type = "Upper-Intermediate"
+        elif lang == "ukr":
+            full_group_type = "Вище середнього"
+        elif lang == "ru":
+            full_group_type = "Выше среднего"
+        else:
+            full_group_type = "Upper-Intermediate"
+
+        return full_group_type
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
