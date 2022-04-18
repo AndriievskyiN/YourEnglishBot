@@ -429,23 +429,23 @@ def responses(command, id):
 
     elif str(command) == "contact_command":
         if lang == "eng":
-            return "📷Instagram: \nhttps://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \n------------------------------------------------------------- \n📞Phone number: +380951775440"
+            return "📷Instagram: \nhttps://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \n-------------------------------------------------------------  \n📞Phone number: +380951775440 \n------------------------------------------------------------- \n✈️Telegram: https://t.me/Your_EnglishBro"
         elif lang == "ukr":
-            return "📷Instagram: \nhttps://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \n------------------------------------------------------------- \n📞Номер телефону: +380951775440"
+            return "📷Instagram: \nhttps://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \n------------------------------------------------------------- \n📞Номер телефону: +380951775440 \n-------------------------------------------------------------\n✈️Telegram: https://t.me/Your_EnglishBro"
         elif lang == "ru":
-            return "📷Instagram: \nhttps://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \n------------------------------------------------------------- \n📞Номер телефона: +380951775440"
+            return "📷Instagram: \nhttps://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \n------------------------------------------------------------- \n📞Номер телефона: +380951775440 \n-------------------------------------------------------------\n✈️Telegram: https://t.me/Your_EnglishBro"
         else:
-            return "📷Instagram: \nhttps://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \n------------------------------------------------------------- \n📞Phone number: +380951775440"
+            return "📷Instagram: \nhttps://instagram.com/your_english_bro?igshid=YmMyMTA2M2Y= \n------------------------------------------------------------- \n📞Phone number: +380951775440 \n-------------------------------------------------------------\n✈️Telegram: https://t.me/Your_EnglishBro"
 
     elif str(command) == "cancel_command":
         if lang == "eng":
-            return "If you want to cancel a class, please contact the teacher directly: \n+380951775440"
+            return "If you want to cancel a class, please contact the teacher directly: \n/contact"
         elif lang == "ukr":
-            return "Якщо ты хочеш скасувати урок, звернись безпосередньо до вчителя: \n+380951775440"
+            return "Якщо ты хочеш скасувати урок, звернись безпосередньо до вчителя: \n/contact"
         elif lang == "ru":
-            return "Если ты хочешь отменить занятие, свяжись с учителем напрямую: \n+380951775440"
+            return "Если ты хочешь отменить занятие, свяжись с учителем напрямую: \n/contact"
         else:
-            return "If you want to cancel a class, please contact the teacher directly: \n+380951775440"
+            return "If you want to cancel a class, please contact the teacher directly: \n/contact"
 
     elif str(command) == "book_command":
         if lang == "eng":
