@@ -312,7 +312,7 @@ async def groups(call: types.CallbackQuery):
                     for i in group_students:
                         await call.message.answer(replyVyacheslav("gstudents_all", call.from_user.id, i))
 
-    
+        #elif call.data == "elgstudents"  or call.data == 
 
 # GROUPS COMMAND FOR VYACHESLAV
 @dp.message_handler(commands=["groups"])
