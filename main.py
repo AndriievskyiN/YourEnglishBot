@@ -201,7 +201,6 @@ async def chooseGroup(call: types.CallbackQuery):
 @dp.message_handler(commands=["cancel"])
 async def cancel(message: types.Message):
     await message.answer(responses("cancel_command", message.from_user.id))
-
 # TEST
 @dp.message_handler(commands=["test"])
 async def cancel(message: types.Message):
