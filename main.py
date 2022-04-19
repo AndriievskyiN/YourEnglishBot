@@ -1,7 +1,6 @@
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import psycopg2
-from pyrsistent import v
 
 # SETTING UP DATABASES
 conn = psycopg2.connect(
@@ -89,9 +88,9 @@ async def welcome(message: types.Message):
         await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters /help")
 
 
-    cur.execute('''INSERT INTO Users (id,firstName, lastName)
+    cur.execute('''INSERT INTO Users ("id","firstName", "lastName")
         VALUES (%s,%s,%s)
-        ON CONFLICT (id) 
+        ON CONFLICT ("id") 
             DO NOTHING''',(message.from_user.id, message.from_user.first_name, message.from_user.last_name))
     conn.commit()
 
@@ -185,19 +184,18 @@ async def chooseGroup(call: types.CallbackQuery):
             await call.message.delete()
             await call.message.answer(responses("group_no_exist", call.from_user.id))
 
-    else:
-        if call.data == "gb":
-            await call.message.delete()
-            await call.message.answer(responses("book_command", call.from_user.id),reply_markup=optionsKeyboard(call.from_user.id))
-        elif call.data == "el":
-            await call.message.delete()
-            await call.message.answer(groupOptionText(call.from_user.id, call.data, groups), reply_markup=yesnoKeyboard(call.from_user.id, "yesel", "nogroup"))
-        elif call.data == "int":
-            await call.message.delete()
-            await call.message.answer(groupOptionText(call.from_user.id, call.data, groups), reply_markup=yesnoKeyboard(call.from_user.id, "yesint","nogroup"))
-        elif call.data == "uint":
-            await call.message.delete()
-            await call.message.answer(groupOptionText(call.from_user.id, call.data, groups), reply_markup=yesnoKeyboard(call.from_user.id, "yesuint", "nogroup"))
+    if call.data == "gb":
+        await call.message.delete()
+        await call.message.answer(responses("book_command", call.from_user.id),reply_markup=optionsKeyboard(call.from_user.id))
+    elif call.data == "el":
+        await call.message.delete()
+        await call.message.answer(groupOptionText(call.from_user.id, call.data, groups), reply_markup=yesnoKeyboard(call.from_user.id, "yesel", "nogroup"))
+    elif call.data == "int":
+        await call.message.delete()
+        await call.message.answer(groupOptionText(call.from_user.id, call.data, groups), reply_markup=yesnoKeyboard(call.from_user.id, "yesint","nogroup"))
+    elif call.data == "uint":
+        await call.message.delete()
+        await call.message.answer(groupOptionText(call.from_user.id, call.data, groups), reply_markup=yesnoKeyboard(call.from_user.id, "yesuint", "nogroup"))
 
 # CANCEL COMMAND
 @dp.message_handler(commands=["cancel"])
@@ -246,6 +244,76 @@ async def students(message: types.Message):
     else:
         await message.answer(responses(message.text, message.from_user.id))
 
+# GROUP STUDENTS FOR VYEACHESLAV
+@dp.message_handler(commands=["gstudents"])
+async def groupStudents(message: types.Message):
+    if message.from_user.id == 579467950 or message.from_user.id == 467337605:
+        cur.execute("SELECT * FROM GROUPS")
+        groups = cur.fetchall()
+
+        if groups == []:
+            await message.answer(replyVyacheslav("no_groups", message.from_user.id))
+        
+        else:
+            await message.answer(replyVyacheslav("gstudents_command", message.from_user.id), reply_markup=groupStudents(message.from_user.id))
+
+    else:
+        await message.answer(responses(message.text, message.from_user.id))
+
+# MANAGING GSTUDENTS BUTTONS
+@dp.callback_query_handler(text=["allgstudents", "elgstudents", "intgstudents","uintgstudents", "gbgstudents"])
+async def groups(call: types.CallbackQuery):
+    if call.from_user.id == 579467950 or call.from_user.id == 467337605:
+
+        cur.execute('SELECT lang FROM Users WHERE "id" = %s',(call.from_user.id,))
+        try:
+            lang = cur.fetchone()[0]    
+        except:
+            cur.execute("ROLLBACK")
+            lang = None
+            
+        if call.data == "allgstudents":
+            cur.execute("SELECT * FROM Users WHERE group_id is not NULL")
+            if cur.fetchall() == []:
+                await call.message.delete()
+                await call.message.answer(replyVyacheslav("no_gstudents", call.from_user.id))
+            
+            else:
+                await call.message.delete()
+                cur.execute("SELECT * FROM group_students WHERE group_type = 'el'")
+                group_students = cur.fetchall()
+                if group_students == []:
+                    pass
+                else:
+                    fulltype = fullGroupType(lang,"el")
+                    await call.message.answer(f"\n--------------------------\n⭐️{fulltype}: \n")
+                    for i in group_students:
+                        await call.message.answer(replyVyacheslav("gstudents_all", call.from_user.id, i))
+                    
+                cur.execute("SELECT * FROM group_students WHERE group_type = 'int'")
+                group_students = cur.fetchall()
+                
+                if group_students == []:
+                    pass
+                else:
+                    fulltype = fullGroupType(lang,"int")
+                    await call.message.answer(f"\n--------------------------\n⭐️⭐️{fulltype}: \n")
+                    for i in group_students:
+                        await call.message.answer(replyVyacheslav("gstudents_all", call.from_user.id, i))
+
+
+                cur.execute("SELECT * FROM group_students WHERE group_type = 'uint'")
+                group_students = cur.fetchall()
+                if group_students == []:
+                    pass
+                else:
+                    fulltype = fullGroupType(lang,"uint")
+                    await call.message.answer(f"\n--------------------------\n⭐️⭐️⭐️{fulltype}: \n")
+                    for i in group_students:
+                        await call.message.answer(replyVyacheslav("gstudents_all", call.from_user.id, i))
+
+    
+
 # GROUPS COMMAND FOR VYACHESLAV
 @dp.message_handler(commands=["groups"])
 async def groups(message: types.Message):
@@ -256,15 +324,16 @@ async def groups(message: types.Message):
         if groups == []:
             await message.answer(replyVyacheslav("no_groups", message.from_user.id))
 
-        for i in groups:
-            await message.answer(replyVyacheslav("groups_command",message.from_user.id, i))
+        else:
+            for i in groups:
+                await message.answer(replyVyacheslav("groups_command",message.from_user.id, i))
     else:
         await message.answer(responses(message.text, message.from_user.id)) 
 
 # MANAGING STUDENTS BUTTONS
-@dp.callback_query_handler(text=["all","mon","tue","wed","thu","fri","sat","sun","gb"])
+@dp.callback_query_handler(text=["all","mon","tue","wed","thu","fri","sat","sun","gbclose"])
 async def manage_students(call: types.CallbackQuery):
-    if call.data == "gb":
+    if call.data == "gbclose":
         await call.message.delete()
     else:
         count = 0
@@ -335,7 +404,7 @@ async def messages(message: types.Message):
 @dp.callback_query_handler(text=["yesb", "nob", "yesd", "nod", "yesg", "nog", "yesel", "yesint", "yesuint","nogroup","yesgd"])
 async def uSure(call: types.CallbackQuery):
     if call.data == "yesb":
-        cur.execute('''INSERT INTO Schedule (firstName, lastName, day, time)
+        cur.execute('''INSERT INTO Schedule ("firstName", "lastName", "day", "time")
             VALUES (%s,%s,%s,%s)''',(firstName, lastName, daydb, hour))
         conn.commit()
         await call.message.delete()
@@ -371,10 +440,10 @@ async def uSure(call: types.CallbackQuery):
     elif call.data == "yesg":
         try:
             if len(group_message) == 6:
-                cur.execute('''INSERT INTO Groups (group_type, day1, hour1, day2, hour2)
+                cur.execute('''INSERT INTO Groups ("group_type", "day1", "hour1", "day2", "hour2")
                                 VALUES (%s,%s, %s, %s,%s)''',(group_message[1],group_message[2],group_message[3], group_message[4],group_message[5]))
             elif len(group_message) == 8:
-                cur.execute('''INSERT INTO Groups (group_type, day1, hour1, day2, hour2, day3, hour3)
+                cur.execute('''INSERT INTO Groups ("group_type", "day1", "hour1", "day2", "hour2", "day3", "hour3")
                                 VALUES (%s,%s, %s, %s,%s,%s,%s)''',(group_message[1],group_message[2],group_message[3], group_message[4],group_message[5], group_message[6],group_message[7]))
             conn.commit()
             await call.message.delete()
@@ -429,6 +498,7 @@ async def uSure(call: types.CallbackQuery):
         await call.message.answer("👌")
 
 def responses(command, id):
+    cur.execute("ROLLBACK")
     cur.execute('''SELECT lang FROM Users WHERE id = %s''',(id,))
     lang = cur.fetchone()[0]
 
@@ -884,6 +954,33 @@ def replyVyacheslav(*args):
         else:
             return "Select what day you want to view"
 
+    elif args[0] == "gstudents_command":
+        if lang == "eng":
+            return "Select the group you want to see students in"
+        elif lang == "ukr":
+            return "Виберіть групу, у якій ви хочете бачити студентів"
+        elif lang == "ru":
+            return "Выберите группу, в которой вы хотите видеть учеников"
+        else:
+            return "Select the group you want to see students in"
+
+    elif args[0] == "no_gstudents":
+        if lang == "eng":
+            return "It seems to me that you don't have any students in groups"
+        elif lang == "ukr":
+            return "Мені здається, що у вас немає учнів у групах"
+        elif lang == "ru":
+            return "Мне кажется, что у вас нет учеников в группах"
+        else:
+            return "It seems to me that you don't have any students in groups"
+
+    elif args[0] == "gstudents_all":
+        if args[2][1] is None:
+            return f"{args[2][0]}"
+        else:
+            return f"{args[2][0]} {args[2][1]}"
+
+
     elif args[0] == "doesn't_exist":
         if lang == "eng":
             return "Hmm... It seems to me that this class does NOT exist. Check your spelling and try again"
@@ -1245,10 +1342,21 @@ def studentsKeyboard(id):
     friday = InlineKeyboardButton(text=str(textOptions(id, "fri")), callback_data="fri")
     saturday = InlineKeyboardButton(text=str(textOptions(id, "sat")), callback_data="sat")
     sunday = InlineKeyboardButton(text=str(textOptions(id, "sun")), callback_data="sun")
-    gb = InlineKeyboardButton(text=str(textOptions(id, "gb")), callback_data="gb")
+    gb = InlineKeyboardButton(text=str(textOptions(id, "gb")), callback_data="gbclose")
 
     daysKeyboard = InlineKeyboardMarkup().add(all).add(monday, tuesday).add(wednesday, thursday).add(friday, saturday).add(sunday).add(gb)
     return daysKeyboard
+
+def groupStudents(id):
+    all = InlineKeyboardButton(text=str(textOptions(id, "all")), callback_data="allgstudents")
+    elgroup = InlineKeyboardButton(text=str(groupOptions(id, "el")), callback_data="elgstudents")
+    intgroup = InlineKeyboardButton(text=str(groupOptions(id, "int")), callback_data="intgstudents")
+    uintgroup = InlineKeyboardButton(text=str(groupOptions(id, "uint")), callback_data="uintgstudents")
+    gb = InlineKeyboardButton(text=str(textOptions(id, "gb")), callback_data="gbgstudents")
+
+    groupStudentsKeyboard = InlineKeyboardMarkup().add(all).add(elgroup).add(intgroup).add(uintgroup).add(gb) 
+
+    return groupStudentsKeyboard
 
 def textOptions(id,day):
     cur.execute('''SELECT lang FROM Users WHERE id = %s''', (id,))
