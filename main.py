@@ -4,10 +4,10 @@ import psycopg2
 
 # SETTING UP DATABASES
 conn = psycopg2.connect(
-    host = "ec2-23-20-224-166.compute-1.amazonaws.com",
-    dbname = "d1jp2pb9ar87ii",
-    user = "knovjuvpathzmp",
-    password = "c42c064b4457b6c474c0fdf73b1b7f7011692fe10000a809f2ddb2965f5538d6",
+    host = "localhost",
+    dbname = "EnglishTelebot",
+    user = "andriievskyi",
+    password = "Kakady33dyno",
     port = 5432
 )
 cur = conn.cursor()
@@ -75,8 +75,13 @@ ioptionsru = InlineKeyboardMarkup().add(iindru).add(iminigroupru).add(igroupru).
 # START COMMAND
 @dp.message_handler(commands=["start"])
 async def welcome(message: types.Message):
-    cur.execute('''SELECT lang FROM Users WHERE id = %s''', (message.from_user.id,))
-    lang = cur.fetchone()
+    
+    try:
+        cur.execute('''SELECT lang FROM Users WHERE id = %s''', (message.from_user.id,))
+        lang = cur.fetchone()
+    except:
+        cur.execute("ROLLBACK")
+        lang = None
 
     if lang == "eng":
         await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters type /help")
@@ -87,7 +92,7 @@ async def welcome(message: types.Message):
     else:
         await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters /help")
 
-
+    
     cur.execute('''INSERT INTO Users ("id","firstName", "lastName")
         VALUES (%s,%s,%s)
         ON CONFLICT ("id") 
@@ -311,7 +316,33 @@ async def groups(call: types.CallbackQuery):
                     for i in group_students:
                         await call.message.answer(replyVyacheslav("gstudents_all", call.from_user.id, i))
 
-        #elif call.data == "elgstudents"  or call.data == 
+        elif call.data == "elgstudents" or call.data == "intgstudents" or call.data == "uintgstudents":
+            await call.message.delete()
+            if call.data == "elgstudents":
+                cur.execute("SELECT * FROM group_students WHERE group_type = %s",(str(call.data[0:2]),))
+            elif call.data == "intgstudents":
+                cur.execute("SELECT * FROM group_students WHERE group_type = %s",(str(call.data[0:3]),))
+            elif call.data == "uintgstudents":
+                cur.execute("SELECT * FROM group_students WHERE group_type = %s",(str(call.data[0:4]),))
+                
+            group_students = cur.fetchall()
+            if group_students == []:
+                pass
+            else:
+                if call.data == "elgstudents":
+                    fulltype = fullGroupType(lang,str(call.data[0:2]))
+                    stars = "⭐️"
+                elif call.data == "intgstudents":
+                    fulltype = fullGroupType(lang,str(call.data[0:3]))
+                    stars = "⭐️⭐️"
+                elif call.data == "uintgstudents":
+                    fulltype = fullGroupType(lang,str(call.data[0:4]))
+                    stars = "⭐️⭐️⭐️"
+
+                await call.message.answer(f"{stars}{fulltype}: \n--------------------------")
+                for i in group_students:
+                    await call.message.answer(replyVyacheslav("gstudents_all", call.from_user.id, i))
+
 
 # GROUPS COMMAND FOR VYACHESLAV
 @dp.message_handler(commands=["groups"])
@@ -1148,6 +1179,7 @@ def replyVyacheslav(*args):
     elif args[0] == "group_deleted" or args[0] == "group_delete_sure":
         global group_type_to_delete
         group_type_delete = fullGroupType(lang, args[2])
+        
 
         if args[0] == "group_deleted":
             if lang == "eng":
@@ -1229,14 +1261,21 @@ def yesnoKeyboard(id, cbdatayes, cbdatano):
     if lang == "eng":
         yesb = InlineKeyboardButton(text="Yes", callback_data=cbdatayes)
         nob = InlineKeyboardButton(text="No", callback_data=cbdatano)
+        return InlineKeyboardMarkup().add(yesb).add(nob)
     elif lang == "ukr":
         yesb = InlineKeyboardButton(text="Так", callback_data=cbdatayes)
         nob = InlineKeyboardButton(text="Ні", callback_data=cbdatano)
+        return InlineKeyboardMarkup().add(yesb).add(nob)
     elif lang == "ru":
         yesb = InlineKeyboardButton(text="Да", callback_data=cbdatayes)
         nob = InlineKeyboardButton(text="Нет", callback_data=cbdatano)
+        return InlineKeyboardMarkup().add(yesb).add(nob)
+    else:
+        yesb = InlineKeyboardButton(text="Yes", callback_data=cbdatayes)
+        nob = InlineKeyboardButton(text="No", callback_data=cbdatano)
+        return InlineKeyboardMarkup().add(yesb).add(nob)
+
     
-    return InlineKeyboardMarkup().add(yesb).add(nob)
 
 def translate(lang, day):
     if lang == "ukr":
