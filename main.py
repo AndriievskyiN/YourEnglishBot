@@ -77,7 +77,7 @@ ioptionsru = InlineKeyboardMarkup().add(iindru).add(iminigroupru).add(igroupru).
 async def welcome(message: types.Message):
     
     try:
-        cur.execute('''SELECT lang FROM Users WHERE id = %s''', (message.from_user.id,))
+        cur.execute('''SELECT "lang" FROM Users WHERE "id" = %s''', (message.from_user.id,))
         lang = cur.fetchone()
     except:
         cur.execute("ROLLBACK")
@@ -378,60 +378,65 @@ async def manage_students(call: types.CallbackQuery):
 # MANAGING REGULAR MESSAGES AND SPECIAL COMMANDS
 @dp.message_handler()
 async def messages(message: types.Message):
-    # MANAGING COMMANDS FOR VYACHESLAV
-    if message.text.startswith("@add"):
-        if message.from_user.id == 467337605 or message.from_user.id == 579467950:
-            global full
-            full = message.text.split()
-            global firstName
-            firstName = full[1].lower()
-            global lastName
-            lastName = full[2].lower()
-            day = full[3].lower()
-            global hour
-            hour = full[4]  
-            global daydb
-            daydb = str(translate("eng",day)).lower()
+    if message.from_user.id == 467337605 or message.from_user.id == 579467950:
+        # MANAGING COMMANDS FOR VYACHESLAV
+        if message.text.startswith("@add"):
+                global full
+                full = message.text.split()
+                global firstName
+                firstName = full[1].lower()
+                global lastName
+                lastName = full[2].lower()
+                day = full[3].lower()
+                global hour
+                hour = full[4]  
+                global daydb
+                daydb = str(translate("eng",day)).lower()
 
-            # DUPLICATE VALIDATION
-            cur.execute('''SELECT firstName, lastName FROM Schedule WHERE day = %s and time = %s''',(daydb, hour))
-            class_ = cur.fetchone()
-            if not class_ is None:
-                await message.answer(replyVyacheslav("daytaken", message.from_user.id, class_[0],class_[1]))
+                # DUPLICATE VALIDATION
+                cur.execute('''SELECT "firstName", "lastName" FROM Schedule WHERE "day" = %s and "time" = %s''',(daydb, hour))
+                class_ = cur.fetchone()
+                if not class_ is None:
+                    await message.answer(replyVyacheslav("daytaken", message.from_user.id, class_[0],class_[1]))
 
-            else:
-                await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id, "yesb", "nob"))
+                else:
+                    await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id, "yesb", "nob"))
 
-    elif message.text.startswith("@cancel"):
-        if message.from_user.id == 467337605 or message.from_user.id == 579467950:
-            global splitted
-            splitted = message.text.split()
+        elif message.text.startswith("@cancel"):
+                global splitted
+                splitted = message.text.split()
 
-            firstName = splitted[1].lower()
-            lastName = splitted[2].lower()
-            day = splitted[3].lower()
-            hour = splitted[4]
+                firstName = splitted[1].lower()
+                lastName = splitted[2].lower()
+                day = splitted[3].lower()
+                hour = splitted[4]
 
-            daydb = str(translate("eng", day)).lower()
-            await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id, "yesd", "nod"))
+                daydb = str(translate("eng", day)).lower()
+                await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id, "yesd", "nod"))
 
-    elif message.text.startswith("@group+"):
-        if message.from_user.id == 467337605 or message.from_user.id == 579467950:
-            global group_message
-            group_message = str(message.text).lower().split()
-            await message.answer(replyVyacheslav("group_sure", message.from_user.id, group_message), reply_markup=yesnoKeyboard(message.from_user.id, "yesg", "nog"))
-    
-    elif message.text.startswith("@group-"):
-        global group_type_to_delete
-        group_type_to_delete = message.text.lower().split()[1]
-
-        if message.from_user.id == 467337605 or message.from_user.id == 579467950:
+        elif message.text.startswith("@group+"):
+                global group_message
+                group_message = str(message.text).lower().split()
+                await message.answer(replyVyacheslav("group_sure", message.from_user.id, group_message), reply_markup=yesnoKeyboard(message.from_user.id, "yesg", "nog"))
+        
+        elif message.text.startswith("@group-"):
+            global group_type_to_delete
+            group_type_to_delete = message.text.lower().split()[1]
             await message.answer(replyVyacheslav("group_delete_sure", message.from_user.id, group_type_to_delete), reply_markup=yesnoKeyboard(message.from_user.id, "yesgd", "nogroup"))
-    else:
-        await message.answer(responses(message.text, message.from_user.id))
+        
+        elif message.text.startswith("@gstudent-"):
+            global fgstudent_to_delete 
+            global lgstudent_to_delete
+            full = message.text.split()
+            fgstudent_to_delete = full[1].lower()
+            lgstudent_to_delete = full[2].lower()
+            await message.answer(replyVyacheslav("gstudent_to_delete", message.from_user.id,fgstudent_to_delete,lgstudent_to_delete), reply_markup = yesnoKeyboard(message.from_user.id, "yesgstudent","nogroup"))
+
+        else:
+            await message.answer(responses(message.text, message.from_user.id))
 
 # ASKING IF EVERYTHING IS CORRECT
-@dp.callback_query_handler(text=["yesb", "nob", "yesd", "nod", "yesg", "nog", "yesel", "yesint", "yesuint","nogroup","yesgd"])
+@dp.callback_query_handler(text=["yesb", "nob", "yesd", "nod", "yesg", "nog", "yesel", "yesint", "yesuint","nogroup","yesgd", "yesgstudent"])
 async def uSure(call: types.CallbackQuery):
     if call.data == "yesb":
         cur.execute('''INSERT INTO Schedule ("firstName", "lastName", "day", "time")
@@ -447,7 +452,7 @@ async def uSure(call: types.CallbackQuery):
     elif call.data == "yesd":
         await call.message.delete()
 
-        cur.execute('''SELECT * FROM Schedule WHERE firstName = %s and lastName = %s and day = %s and time = %s''',(firstName, lastName, daydb, hour))
+        cur.execute('''SELECT * FROM Schedule WHERE "firstName" = %s and "lastName" = %s and "day" = %s and "time" = %s''',(firstName, lastName, daydb, hour))
         class_ = cur.fetchone()
         if class_ is None:
             await call.message.answer(replyVyacheslav("doesn't_exist", call.from_user.id)) 
@@ -456,10 +461,10 @@ async def uSure(call: types.CallbackQuery):
             cur.execute('''DELETE
                             FROM
                                 Schedule
-                            WHERE firstName = %s and lastName = %s and day = %s and time = %s''', (firstName, lastName, daydb, hour))
+                            WHERE "firstName" = %s and "lastName" = %s and "day" = %s and "time" = %s''', (firstName, lastName, daydb, hour))
             conn.commit()
     
-            cur.execute("SELECT lang FROM Users WHERE id = %s",(call.from_user.id,))
+            cur.execute('''SELECT "lang" FROM Users WHERE "id" = %s''',(call.from_user.id,))
             lang = cur.fetchone()[0]
             await call.message.answer(replyVyacheslav("cancel_success", call.from_user.id, (firstName.capitalize(), lastName.capitalize(), translate(lang,daydb), hour)))
 
@@ -492,24 +497,24 @@ async def uSure(call: types.CallbackQuery):
 
 
     elif call.data == "yesel" or call.data == "yesint" or call.data == "yesuint":
-        cur.execute("SELECT group_id FROM Users WHERE id = %s", (call.from_user.id,))
+        cur.execute('''SELECT "group_id" FROM Users WHERE "id" = %s''', (call.from_user.id,))
         if not cur.fetchone()[0] is None:
             await call.message.delete()
             await call.message.answer(responses("alreadyInGroup", call.from_user.id))
         else:
-            cur.execute('''SELECT group_id FROM Groups WHERE group_type = %s''',(call.data[3:],))
+            cur.execute('''SELECT "group_id" FROM Groups WHERE "group_type" = %s''',(call.data[3:],))
             group_id = cur.fetchone()[0]
 
             cur.execute('''UPDATE Users
-                            SET group_id = %s
-                                WHERE id = %s''', (group_id,call.from_user.id))
+                            SET "group_id" = %s
+                                WHERE "id" = %s''', (group_id,call.from_user.id))
             conn.commit()
             await call.message.delete()
             await call.message.answer(responses('group_success', call.from_user.id))
 
     elif call.data == "yesgd":
 
-        cur.execute("SELECT * FROM GROUPS WHERE group_type = %s",(group_type_to_delete,))
+        cur.execute('''SELECT * FROM GROUPS WHERE "group_type" = %s''',(group_type_to_delete,))
         thegroup = cur.fetchone()
         
         if thegroup is None:
@@ -517,7 +522,7 @@ async def uSure(call: types.CallbackQuery):
             await call.message.answer(replyVyacheslav("group_delete_no_exist", call.from_user.id))
 
         else:
-            cur.execute("DELETE FROM GROUPS WHERE group_type = %s",(group_type_to_delete,))
+            cur.execute('''DELETE FROM GROUPS WHERE "group_type" = %s''',(group_type_to_delete,))
             conn.commit()
 
             await call.message.delete()
@@ -526,10 +531,22 @@ async def uSure(call: types.CallbackQuery):
     elif call.data == "nogroup":
         await call.message.delete()
         await call.message.answer("👌")
+    
+    elif call.data == "yesgstudent":
+        await call.message.delete()
+        cur.execute('''SELECT "group_type" FROM group_students WHERE "firstName" = %s and "lastName" = %s''',(fgstudent_to_delete, lgstudent_to_delete))
+        try:
+            type_group = cur.fetchone()[0]
+            cur.execute('''UPDATE USERS SET "group_id" = NULL WHERE "firstName" = %s and "lastName" = %s ''', (fgstudent_to_delete, lgstudent_to_delete))
+            conn.commit()
+            await call.message.answer(replyVyacheslav("gstudent_delete_success", call.from_user.id, fgstudent_to_delete, lgstudent_to_delete, type_group))
+
+        except:
+            await call.message.answer(replyVyacheslav("gstudent_to_delete_no_exist", call.from_user.id, fgstudent_to_delete,lgstudent_to_delete))
 
 def responses(command, id):
     cur.execute("ROLLBACK")
-    cur.execute('''SELECT lang FROM Users WHERE id = %s''',(id,))
+    cur.execute('''SELECT "lang" FROM Users WHERE "id" = %s''',(id,))
     lang = cur.fetchone()[0]
 
     if str(command) == "help_command":
@@ -730,7 +747,7 @@ def responses(command, id):
             return '''My name is Viacheslav aka Your English Bro 😎 
 
 I’ve been teaching for more than 3 years now. 
-I am a Business English teacher 👨‍🏫 in Ukrainian-American Concordia university. 
+I am a Business English teacher 👨‍🏫 in a Ukrainian-American Concordia university. 
 I’ve completed language courses in \n\nReading, UK 🇬🇧 \nExeter, UK 🇬🇧 \nToronto, Canada 🇨🇦
 
 I have BBA and MBA, so I know something about business as well as economics 💵 
@@ -763,7 +780,7 @@ My big goal is to teach as many people as I can to make Ukraine an English speak
             return '''My name is Viacheslav aka Your English Bro 😎 
 
 I’ve been teaching for more than 3 years now. 
-I am a Business English teacher 👨‍🏫 in Ukrainian-American Concordia university. 
+I am a Business English teacher 👨‍🏫 in a Ukrainian-American Concordia university. 
 I’ve completed language courses in: \n\nReading, UK 🇬🇧 \nExeter, UK 🇬🇧 \nToronto, Canada 🇨🇦
 
 I have BBA and MBA, so I know something about business as well as economics 💵 
@@ -790,7 +807,7 @@ My big goal is to teach as many people as I can to make Ukraine an English speak
                 return "I'm sorry... I don't understand what you mean :("
 
 def optionsInfo(id):
-    cur.execute('''SELECT lang FROM Users WHERE id = %s''', (id,))
+    cur.execute('''SELECT "lang" FROM Users WHERE "id" = %s''', (id,))
     lang = cur.fetchone()[0]
 
     if lang == "eng":
@@ -804,7 +821,7 @@ def optionsInfo(id):
 
 
 def optionsKeyboard(id):
-    cur.execute('''SELECT lang FROM Users WHERE id = %s''', (id,))
+    cur.execute('''SELECT "lang" FROM Users WHERE "id" = %s''', (id,))
     lang = cur.fetchone()[0]
 
     if lang == "eng":
@@ -817,11 +834,11 @@ def optionsKeyboard(id):
         return optionseng
 
 def replyVyacheslav(*args):
-    cur.execute('''SELECT lang FROM Users WHERE id = %s''', (args[1],))
+    cur.execute('''SELECT "lang" FROM Users WHERE "id" = %s''', (args[1],))
     lang = cur.fetchone()[0]
 
     if args[0] == "vyacheslav_add":
-        cur.execute('''SELECT day, time FROM Schedule WHERE firstName = %s and lastName = %s''',(str(args[2][1]).lower(),str(args[2][2]).lower()))
+        cur.execute('''SELECT "day", "time" FROM Schedule WHERE "firstName" = %s and "lastName" = %s''',(str(args[2][1]).lower(),str(args[2][2]).lower()))
         global day
         day, hour = cur.fetchall()[-1]
         if lang == "eng":
@@ -1006,9 +1023,9 @@ def replyVyacheslav(*args):
 
     elif args[0] == "gstudents_all":
         if args[2][1] is None:
-            return f"{args[2][0]}"
+            return f"{str(args[2][0]).capitalize()}"
         else:
-            return f"{args[2][0]} {args[2][1]}"
+            return f"{str(args[2][0]).capitalize()} {str(args[2][1]).capitalize()}"
 
 
     elif args[0] == "doesn't_exist":
@@ -1211,9 +1228,46 @@ def replyVyacheslav(*args):
         else:
             return "This group is already deleted or doesn't exist"
 
+    elif args[0] == "gstudent_to_delete":
+        firstName = args[2].capitalize()
+        lastName = args[3].capitalize()
+        if lang == "eng":
+            return f"Are you sure you want to remove {firstName} {lastName}?"
+        elif lang == "ukr":
+            return f"Ви впевнені, що хочете видалити {firstName} {lastName}?"
+        elif lang == "ru":
+            return f"Вы уверены, что хотите удалить {firstName} {lastName}?"
+        else:
+            return f"Are you sure you want to remove {firstName} {lastName}?"
+
+    elif args[0] == "gstudent_delete_success":
+        firstName = args[2].capitalize()
+        lastName = args[3].capitalize()
+        group_type = fullGroupType(lang, args[4])
+        if lang == "eng":
+            return f"Okay! {firstName} {lastName} has been removed from the {group_type} group"
+        elif lang == "ukr":
+            return f'Гаразд! {firstName} {lastName} видалено з групи "{group_type}"'
+        elif lang == "ru":
+            return f'Хорошо! {firstName} {lastName} удален из группы "{group_type}"'
+        else:
+            return f"Okay! {firstName} {lastName} has been removed from the {group_type} group"
+    
+    elif args[0] == "gstudent_to_delete_no_exist":
+        firstName = args[2].capitalize()
+        lastName = args[3].capitalize()
+        if lang == "eng":
+            return f"{firstName} {lastName} doesn't seem to be in any group. Check your spelling, you might have typed the name wrong"
+        elif lang == "ukr":
+            return f"Здається, {firstName} {lastName} не входить до жодної групи. Перевірте свій правопис, можливо, ви ввели ім'я неправильно"
+        elif lang == "ru":
+            return f"Похоже, {firstName} {lastName} не состоит ни в одной группе. Проверьте правильность написания, возможно, вы неправильно напечатали имя"
+        else:
+            return f"{firstName} {lastName} doesn't seem to be in any group. Check your spelling, you might have typed the name wrong"
+
 def VyacheslavStudents(id,option):
     students = []
-    cur.execute("SELECT lang FROM Users WHERE id = %s",(id,))
+    cur.execute('''SELECT "lang" FROM Users WHERE "id" = %s''',(id,))
     lang = cur.fetchone()[0]
     
     if option == "all":
@@ -1255,7 +1309,7 @@ def VyacheslavStudents(id,option):
     return students
 
 def yesnoKeyboard(id, cbdatayes, cbdatano):
-    cur.execute("SELECT lang FROM Users WHERE id = %s", (id,))
+    cur.execute('''SELECT "lang" FROM Users WHERE "id" = %s''', (id,))
     lang = cur.fetchone()[0]
 
     if lang == "eng":
@@ -1397,7 +1451,7 @@ def groupStudents(id):
     return groupStudentsKeyboard
 
 def textOptions(id,day):
-    cur.execute('''SELECT lang FROM Users WHERE id = %s''', (id,))
+    cur.execute('''SELECT "lang" FROM Users WHERE "id" = %s''', (id,))
     lang = cur.fetchone()[0]
 
     if lang == "eng":
@@ -1481,7 +1535,7 @@ def textOptions(id,day):
             return "⬅️Go back"
 
 def groupOptions(id, group_type):
-    cur.execute("SELECT lang FROM Users WHERE id = %s", (id,))
+    cur.execute('''SELECT "lang" FROM Users WHERE "id" = %s''', (id,))
     lang = cur.fetchone()[0]
 
     if group_type == "el":
@@ -1515,10 +1569,10 @@ def groupOptions(id, group_type):
             return "Upper-Intermediate"
 
 def groupOptionText(id, group_type, groups):
-    cur.execute("SELECT lang FROM Users WHERE id = %s",(id,))
+    cur.execute('''SELECT "lang" FROM Users WHERE "id" = %s''',(id,))
     lang = cur.fetchone()[0]
 
-    cur.execute("SELECT * FROM Groups WHERE group_type = %s",(group_type,))
+    cur.execute('''SELECT * FROM Groups WHERE "group_type" = %s''',(group_type,))
     schedule = cur.fetchone()
 
     day1 = translate(lang, schedule[2])
