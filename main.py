@@ -1572,12 +1572,20 @@ def groupOptionText(id, group_type, groups):
             elif group_type == "uint":
                 return f"Эта группа подходит для студентов, которые могут понять основные идеи сложного текста как по конкретным, так и по абстрактным темам, включая технические дискуссии в своей области специализации. \n-------------------------------- \nРасписание: \n1й урок {day1} {schedule[3]} \n2й урок {day2} {schedule[5]} \n \nХочешь забронировать место в этой группе?"
     else:
-        if group_type == "el":
-            return "This group is good for students who can understand and use familiar everyday expressions and very basic phrases aimed at the satisfaction of needs of a concrete type. \n \nDo you want to book a place in this group?"
-        elif group_type == "int":
-            return "This group is good for students who can understand the main points of clear standard input on familiar matters regularly encountered in work, school, leisure, etc. \n \nDo you want to book a place in this group?"
-        elif group_type == "uint":
-            return "This group is good for students who can understand the main ideas of complex text on both concrete and abstract topics, including technical discussions in their field of specialisation. \n \nDo you want to book a place in this group?"
+        try:
+            if group_type == "el":
+                return f"This group is good for students who can understand and use familiar everyday expressions and very basic phrases aimed at the satisfaction of needs of a concrete type \n-------------------------------- \nSchedule: \n1st class {day1} {schedule[3]} \n2nd class {day2} {schedule[5]} \n3rd class {day3} {schedule[7]} \n \nDo you want to book a place in this group?"
+            elif group_type == "int":
+                return f"This group is good for students who can understand the main points of clear standard input on familiar matters regularly encountered in work, school, leisure, etc \n-------------------------------- \nSchedule: \n1st class {day1} {schedule[3]} \n2nd class {day2} {schedule[5]} \n3rd class {day3} {schedule[7]} \n \nDo you want to book a place in this group?"
+            elif group_type == "uint":
+                return f"This group is good for students who can understand the main ideas of complex text on both concrete and abstract topics, including technical discussions in their field of specialisation. \n-------------------------------- \nSchedule: \n1st class {day1} {schedule[3]} \n2nd class {day2} {schedule[5]} \n3rd class {day3} {schedule[7]} \n \nDo you want to book a place in this group?"
+        except:
+            if group_type == "el":
+                return f"This group is good for students who can understand and use familiar everyday expressions and very basic phrases aimed at the satisfaction of needs of a concrete type \n-------------------------------- \nSchedule: \n1st class {day1} {schedule[3]} \n2nd class {day2} {schedule[5]} \n \nDo you want to book a place in this group?"
+            elif group_type == "int":
+                return f"This group is good for students who can understand the main points of clear standard input on familiar matters regularly encountered in work, school, leisure, etc \n-------------------------------- \nSchedule: \n1st class {day1} {schedule[3]} \n2nd class {day2} {schedule[5]} \n \nDo you want to book a place in this group?"
+            elif group_type == "uint":
+                return f"This group is good for students who can understand the main ideas of complex text on both concrete and abstract topics, including technical discussions in their field of specialisation. \n-------------------------------- \nSchedule: \n1st class {day1} {schedule[3]} \n2nd class {day2} {schedule[5]} \n \nDo you want to book a place in this group?"
 
 def fullGroupType(lang, group_type):
     if group_type == "el":
