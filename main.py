@@ -348,7 +348,19 @@ async def groups(call: types.CallbackQuery):
 @dp.message_handler(commands=["groups"])
 async def groups(message: types.Message):
     if message.from_user.id == 579467950 or message.from_user.id == 467337605:
-        cur.execute("SELECT * FROM GROUPS")
+        cur.execute('''SELECT
+                            * 
+                        FROM
+                            GROUPS 
+                        ORDER BY (
+                            CASE
+                                WHEN "group_type" = 'el' THEN 1
+                                WHEN "group_type" = 'int' THEN 2
+                                WHEN "group_type" = 'uint' THEN 3
+                                END
+                        ) ASC
+                        ''')
+
         groups = cur.fetchall()
 
         if groups == []:
@@ -427,16 +439,24 @@ async def messages(message: types.Message):
         elif message.text.startswith("@gstudent-"):
             global fgstudent_to_delete 
             global lgstudent_to_delete
-            full = message.text.split()
-            fgstudent_to_delete = full[1].lower()
-            lgstudent_to_delete = full[2].lower()
+            full = message.text.lower().split()
+            fgstudent_to_delete = full[1]
+            lgstudent_to_delete = full[2]
             await message.answer(replyVyacheslav("gstudent_to_delete", message.from_user.id,fgstudent_to_delete,lgstudent_to_delete), reply_markup = yesnoKeyboard(message.from_user.id, "yesgstudent","nogroup"))
 
+        elif message.text.startswith("@gupdate"):
+            full = message.text.lower().split()
+            await message.answer(replyVyacheslav("group_sure", message.from_user.id,full), reply_markup = yesnoKeyboard(message.from_user.id, "yesgupdate","nogroup"))
+
+        elif message.text.startswith("@supdate"):
+            full = message.text.lower().split()
+            await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text.lower()), reply_markup=yesnoKeyboard(message.from_user.id, "yessupdate", "nogroup"))
+        
         else:
             await message.answer(responses(message.text, message.from_user.id))
 
 # ASKING IF EVERYTHING IS CORRECT
-@dp.callback_query_handler(text=["yesb", "nob", "yesd", "nod", "yesg", "nog", "yesel", "yesint", "yesuint","nogroup","yesgd", "yesgstudent"])
+@dp.callback_query_handler(text=["yesb", "nob", "yesd", "nod", "yesg", "nog", "yesel", "yesint", "yesuint","nogroup","yesgd", "yesgstudent","yesgupdate","yessupdate", "yessupdate_add"])
 async def uSure(call: types.CallbackQuery):
     if call.data == "yesb":
         cur.execute('''INSERT INTO Schedule ("firstName", "lastName", "day", "time")
@@ -543,6 +563,48 @@ async def uSure(call: types.CallbackQuery):
 
         except:
             await call.message.answer(replyVyacheslav("gstudent_to_delete_no_exist", call.from_user.id, fgstudent_to_delete,lgstudent_to_delete))
+
+    elif call.data == "yesgupdate":
+        await call.message.delete()
+        cur.execute('''SELECT "group_id" FROM GROUPS WHERE "group_type" = %s''', (full[1],))
+        if cur.fetchall() == []:
+            if len(full) == 6:
+                cur.execute('''INSERT INTO Groups ("group_type", "day1", "hour1", "day2", "hour2")
+                            VALUES (%s,%s, %s, %s,%s)''',(full[1],full[2],full[3], full[4],full[5]))
+            elif len(full) == 8:
+                cur.execute('''INSERT INTO Groups ("group_type", "day1", "hour1", "day2", "hour2", "day3", "hour3")
+                                VALUES (%s,%s, %s, %s,%s,%s,%s)''',(full[1],full[2],full[3], full[4],full[5], full[6],full[7]))
+            conn.commit()
+            await call.message.answer(replyVyacheslav("yesg", call.from_user.id,full[1]))
+
+        else:
+            if len(full) == 6:
+                cur.execute('''UPDATE GROUPS SET "day1" = %s, "hour1" = %s, "day2" = %s, "hour2" = %s, "day3" = null, "hour3" = null WHERE "group_type" = %s''', (full[2],full[3], full[4],full[5], full[1]))
+            elif len(full) == 8:
+                cur.execute('''UPDATE GROUPS SET "day1" = %s, "hour1" = %s, "day2" = %s, "hour2" = %s, "day3" = %s, "hour3" = %s WHERE "group_type" = %s''', (full[2],full[3], full[4],full[5],full[6], full[7], full[1]))
+
+            conn.commit()
+            await call.message.answer(replyVyacheslav("gupdate_success", call.from_user.id,full[1]))
+
+    elif call.data == "yessupdate":
+        await call.message.delete()
+        cur.execute('''SELECT "id" FROM SCHEDULE WHERE "firstName" = %s and "lastName" = %s''', (full[1], full[2]))
+        if cur.fetchall() == []:
+            print("work")
+            await call.message.answer(replyVyacheslav("student_doesn't_exist", call.from_user.id),reply_markup=yesnoKeyboard(call.from_user.id, "yessupdate_add", "nogroup"))
+
+        else:
+            cur.execute('''UPDATE SCHEDULE SET "day" = %s, time = %s''',(full[3], full[4]))
+            conn.commit()
+            await call.message.answer(replyVyacheslav("supdate_success", call.from_user.id, full))
+
+    elif call.data == "yessupdate_add":
+        await call.message.delete()
+        cur.execute('''INSERT INTO SCHEDULE ("firstName", "lastName", "day", "time") 
+                        VALUES (%s,%s,%s,%s)''',(full[1], full[2],full[3], full[4]))
+        conn.commit()
+
+        await call.message.answer(replyVyacheslav("vyacheslav_add", call.from_user.id, full))
 
 def responses(command, id):
     cur.execute("ROLLBACK")
@@ -883,7 +945,7 @@ def replyVyacheslav(*args):
         message = str(args[2]).split()
         firstName = str(message[1]).capitalize()
         lastName = str(message[2]).capitalize()
-        dday = str(message[3]).lower()
+        dday = str(message[3])
         hour = message[4]
 
         if lang == "eng":
@@ -900,38 +962,8 @@ def replyVyacheslav(*args):
             return f"Is everything correct? \n \n{firstName} {lastName} {theday} {hour}"
 
     elif args[0] == "group_sure":
-        group_type = args[2][1]
-        if group_type == "el":
-            if lang == "eng":
-                group_type = "Elementary"
-            elif lang == "ukr":
-                group_type = "Початковий"
-            elif lang == "ru":
-                group_type = "Начальный"
-            else:
-                group_type = "Elementary"
+        group_type = fullGroupType(lang, args[2][1])
 
-        elif group_type == "int":
-            if lang == "eng":
-                group_type = "Intermediate"
-            elif lang == "ukr":
-                group_type = "Середній"
-            elif lang == "ru":
-                group_type = "Средний"
-            else:
-                group_type = "Intermediate"
-        
-        elif group_type == "uint":
-            if lang == "eng":
-                group_type = "Upper-Intermediate"
-            elif lang == "ukr":
-                group_type = "Вище середнього"
-            elif lang == "ru":
-                group_type = "Выше Среднего"
-            else:
-                group_type = "Upper-Intermediate"
-
-        
         if len(args[2]) == 6:
             day1 = translate(lang, args[2][2])
             hour1 = translate(lang, args[2][3])
@@ -1032,9 +1064,9 @@ def replyVyacheslav(*args):
         if lang == "eng":
             return "Hmm... It seems to me that this class does NOT exist. Check your spelling and try again"
         elif lang == "ukr":
-            return "Хм... Мені здається, що цього класу НЕ існує. Перевірте правопис і спробуйте ще раз"
+            return "Хм... Мені здається, що цього уроку НЕ існує. Перевірте правопис і спробуйте ще раз"
         elif lang == "ru":
-            return "Хм... Мне кажется, что этого класса НЕ существует. Проверьте правильность написания и повторите попытку"
+            return "Хм... Мне кажется, что этого урока НЕ существует. Проверьте правильность написания и повторите попытку"
         else:
             return "Hmm... It seems to me that this class does NOT exist. Check your spelling and try again"
 
@@ -1059,30 +1091,15 @@ def replyVyacheslav(*args):
             return "Okay, this class was not removed... If you do want to cancel a class, please do the process again"
 
     elif args[0] == "yesg":
+        group_type = fullGroupType(lang, args[2])
         if lang == "eng":
-            if args[2] == "int":
-                group_type = "Intermediate"
-            elif args[2] == "el":
-                group_type = "Elementary"
-            elif args[2] == "uint":
-                group_type = "Upper-Intermediate"
             return f"Great! The {group_type} group was added successfully!"
         elif lang == "ukr":
-            if args[2] == "int":
-                group_type = "Середня"
-            elif args[2] == "el":
-                group_type = "Початкова"
-            elif args[2] == "uint":
-                group_type == "Вище Середнього"
             return f'Чудово! Група "{group_type}" додана успішно!'
         elif lang == "ru":
-            if args[2] == "int":
-                group_type = "Средняя"
-            elif args[2] == "el":
-                group_type = "Начальная"
-            elif args[2] == "uint":
-                group_type = "Выше среднего"
-            return f'Отлично! Группа "{group_type}" группа добавлена удачно!'      
+            return f'Отлично! Группа "{group_type}" группа добавлена удачно!'  
+        else:
+            return f"Great! The {group_type} group was added successfully!"
 
     elif args[0] == "nog":
         if lang == "eng":
@@ -1119,35 +1136,7 @@ def replyVyacheslav(*args):
     elif args[0] == "groups_command":
         groups = args[2]
 
-        if groups[1] == "el":
-            if lang == "eng":
-                group_type  = "Elementary"
-            elif lang == "ukr":
-                group_type  = "Початкова"
-            elif lang == "ru":
-                group_type = "Начальная"
-            else:
-                group_type = "Elementary"
-
-        elif groups[1] == "int":
-            if lang == "eng":
-                group_type = "Intermediate"
-            elif lang == "ukr":
-                group_type = "Середня"
-            elif lang == "ru":
-                group_type = "Средняя"
-            else:
-                group_type = "Intermediate"
-
-        elif groups[1] == "uint":
-            if lang == "eng":
-                group_type = "Upper-Intermediate"
-            elif lang == "ukr":
-                group_type = "Вище середнього"
-            elif lang == "ru":
-                group_type = "Выше среднего"
-            else:
-                group_type = "Upper-Intermediate"
+        group_type = fullGroupType(lang, groups[1])
 
         firstday = translate(lang, groups[2])
         secondday = translate(lang, groups[4])
@@ -1264,6 +1253,42 @@ def replyVyacheslav(*args):
             return f"Похоже, {firstName} {lastName} не состоит ни в одной группе. Проверьте правильность написания, возможно, вы неправильно напечатали имя"
         else:
             return f"{firstName} {lastName} doesn't seem to be in any group. Check your spelling, you might have typed the name wrong"
+    
+    elif args[0] == "gupdate_success":
+        group_type = fullGroupType(lang, args[2])
+        if lang == "eng":
+            return f"Great! The {group_type} group was updated successfully!"
+        elif lang == "ukr":
+            return f'Чудово! Група "{group_type}" успішно оновлена!'
+        elif lang == "ru":
+            return f'Отлично! Группа "{group_type}" успешно обновлена!'  
+        else:
+            return f"Great! The {group_type} group was updated successfully!"
+
+    elif args[0] == "supdate_success":
+        day = translate(lang, args[2][3])
+        firstName = args[2][1].capitalize()
+        lastName = args[2][2].capitalize()
+        hour = args[2][4]
+
+        if lang == "eng":
+            return f"Great! New schedule for {firstName} {lastName}: \n{day} {hour}"
+        elif lang == "ukr":
+            return f"Чудово! Новий розклад для {firstName} {lastName}: \n{day} {hour}"
+        elif lang == "ru":
+            return f"Отлично! Новое расписание для {firstName} {lastName}: \n{day} {hour}"
+        else:
+            return f"Great! New schedule for {firstName} {lastName}: \n{day} {hour}"
+
+    elif args[0] == "student_doesn't_exist":
+        if lang == "eng":
+            return "Hmm... It seems to me that this class does NOT exist. Did you mean to @add this class?"
+        elif lang == "ukr":
+            return "Хм... Мені здається, що цього класу НЕ існує. Ви хотіли @add цей урок?"
+        elif lang == "ru":
+            return "Хм... Мне кажется, что этого класса НЕ существует. Вы хотели @add этот урок?"
+        else:
+            return "Hmm... It seems to me that this class does NOT exist. Did you mean to @add this class?"
 
 def VyacheslavStudents(id,option):
     students = []
