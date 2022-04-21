@@ -1,6 +1,7 @@
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import psycopg2
+from sqlalchemy import null
 
 # SETTING UP DATABASES
 conn = psycopg2.connect(
@@ -11,7 +12,6 @@ conn = psycopg2.connect(
     port = 5432
 )
 cur = conn.cursor()
-
 # PRE-BUILT INPUTS
 hi_eng = ["hi", "hello", "what's up?", "what is up", "what's up", "what is up?", "hello there", "sup", "whassup", "wha sup", "hi there", "hey"]
 hi_ukr = ["привіт", "хей", "добрий день"]
@@ -82,21 +82,41 @@ async def welcome(message: types.Message):
     except:
         cur.execute("ROLLBACK")
         lang = None
+    
+    if len(message.from_user.first_name.split()) == 2:
+        if message.from_user.last_name is None:
+            firstName = message.from_user.first_name.split()[0].lower()
+            lastName = message.from_user.first_name.split()[1].lower()
+
+    else:
+        firstName = message.from_user.first_name.lower()
+        try:
+            lastName = message.from_user.last_name.lower()
+        except:
+            lastName = None
 
     if lang == "eng":
-        await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters type /help")
+        await message.answer(f"Hello {firstName.capitalize()}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters type /help")
     elif lang == "ukr":
-        await message.answer(f"Привіт {message.from_user.first_name}!\nЯ твій English Bro Bot 🤖 \nЯк ся маєш? \nДля початку введи /help")
+        await message.answer(f"Привіт {firstName.capitalize()}!\nЯ твій English Bro Bot 🤖 \nЯк ся маєш? \nДля початку введи /help")
     elif lang == "ru":
-        await message.answer(f"Привет {message.from_user.first_name}!\nЯ твой English Bro Bot 🤖\nКак дела? \nДля начала нажми /help")
+        await message.answer(f"Привет {firstName.capitalize()}!\nЯ твой English Bro Bot 🤖\nКак дела? \nДля начала нажми /help")
     else:
-        await message.answer(f"Hello {message.from_user.first_name}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters /help")
+        await message.answer(f"Hello {firstName.capitalize()}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters /help")
 
-    
+    cur.execute('''INSERT INTO USERS ("id","firstName", "lastName")
+                    VALUES (%s,%s,%s)
+                    ON CONFLICT ("id") 
+                        DO UPDATE
+                            SET "firstName" = EXCLUDED."firstName",
+                                "lastName" = EXCLUDED."lastName" ''',(message.from_user.id,firstName,lastName))
+        
     cur.execute('''INSERT INTO Users ("id","firstName", "lastName")
         VALUES (%s,%s,%s)
         ON CONFLICT ("id") 
-            DO NOTHING''',(message.from_user.id, message.from_user.first_name, message.from_user.last_name))
+            DO UPDATE
+                SET "firstName" = EXCLUDED."firstName",
+                    "lastName" = EXCLUDED."lastName"''',(message.from_user.id, firstName, lastName))
     conn.commit()
 
 # LANG COMMAND
@@ -194,13 +214,25 @@ async def chooseGroup(call: types.CallbackQuery):
         await call.message.answer(responses("book_command", call.from_user.id),reply_markup=optionsKeyboard(call.from_user.id))
     elif call.data == "el":
         await call.message.delete()
-        await call.message.answer(groupOptionText(call.from_user.id, call.data, groups), reply_markup=yesnoKeyboard(call.from_user.id, "yesel", "nogroup"))
+        cur.execute('''SELECT "num_students" FROM GROUPS WHERE "group_type" = 'el' ''')
+        if cur.fetchone()[0] >= 8:
+            await call.message.answer(responses("group_is_full", call.from_user.id))
+        else:
+            await call.message.answer(groupOptionText(call.from_user.id, call.data, groups), reply_markup=yesnoKeyboard(call.from_user.id, "yesel", "nogroup"))
     elif call.data == "int":
         await call.message.delete()
-        await call.message.answer(groupOptionText(call.from_user.id, call.data, groups), reply_markup=yesnoKeyboard(call.from_user.id, "yesint","nogroup"))
+        cur.execute('''SELECT "num_students" FROM GROUPS WHERE "group_type" = 'int' ''')
+        if cur.fetchone()[0] >= 8:
+            await call.message.answer(responses("group_is_full", call.from_user.id))
+        else:
+            await call.message.answer(groupOptionText(call.from_user.id, call.data, groups), reply_markup=yesnoKeyboard(call.from_user.id, "yesint","nogroup"))
     elif call.data == "uint":
         await call.message.delete()
-        await call.message.answer(groupOptionText(call.from_user.id, call.data, groups), reply_markup=yesnoKeyboard(call.from_user.id, "yesuint", "nogroup"))
+        cur.execute('''SELECT "num_students" FROM GROUPS WHERE "group_type" = 'uint' ''')
+        if cur.fetchone()[0] >= 8:
+            await call.message.answer(responses("group_is_full", call.from_user.id))
+        else:
+            await call.message.answer(groupOptionText(call.from_user.id, call.data, groups), reply_markup=yesnoKeyboard(call.from_user.id, "yesuint", "nogroup"))
 
 # CANCEL COMMAND
 @dp.message_handler(commands=["cancel"])
@@ -291,20 +323,26 @@ async def groups(call: types.CallbackQuery):
                 else:
                     fulltype = fullGroupType(lang,"el")
                     await call.message.answer(f"\n--------------------------\n⭐️{fulltype}: \n")
+                    count = 0
                     for i in group_students:
                         await call.message.answer(replyVyacheslav("gstudents_all", call.from_user.id, i))
+                        count += 1
                     
+                    await call.message.answer("\n--------------------------\n{}".format(replyVyacheslav("show_count_gstudents", call.from_user.id, count)))
+                
+                
                 cur.execute("SELECT * FROM group_students WHERE group_type = 'int'")
                 group_students = cur.fetchall()
-                
                 if group_students == []:
                     pass
                 else:
                     fulltype = fullGroupType(lang,"int")
                     await call.message.answer(f"\n--------------------------\n⭐️⭐️{fulltype}: \n")
+                    count = 0
                     for i in group_students:
                         await call.message.answer(replyVyacheslav("gstudents_all", call.from_user.id, i))
-
+                        count += 1
+                    await call.message.answer("\n--------------------------\n{}".format(replyVyacheslav("show_count_gstudents", call.from_user.id, count)))
 
                 cur.execute("SELECT * FROM group_students WHERE group_type = 'uint'")
                 group_students = cur.fetchall()
@@ -313,8 +351,11 @@ async def groups(call: types.CallbackQuery):
                 else:
                     fulltype = fullGroupType(lang,"uint")
                     await call.message.answer(f"\n--------------------------\n⭐️⭐️⭐️{fulltype}: \n")
+                    count = 0
                     for i in group_students:
                         await call.message.answer(replyVyacheslav("gstudents_all", call.from_user.id, i))
+                        count += 1
+                    await call.message.answer("\n--------------------------\n{}".format(replyVyacheslav("show_count_gstudents", call.from_user.id, count)))
 
         elif call.data == "elgstudents" or call.data == "intgstudents" or call.data == "uintgstudents":
             await call.message.delete()
@@ -340,9 +381,11 @@ async def groups(call: types.CallbackQuery):
                     stars = "⭐️⭐️⭐️"
 
                 await call.message.answer(f"{stars}{fulltype}: \n--------------------------")
+                count = 0
                 for i in group_students:
                     await call.message.answer(replyVyacheslav("gstudents_all", call.from_user.id, i))
-
+                    count += 1
+                await call.message.answer("\n--------------------------\n{}".format(replyVyacheslav("show_count_gstudents", call.from_user.id, count)))
 
 # GROUPS COMMAND FOR VYACHESLAV
 @dp.message_handler(commands=["groups"])
@@ -441,7 +484,12 @@ async def messages(message: types.Message):
             global lgstudent_to_delete
             full = message.text.lower().split()
             fgstudent_to_delete = full[1]
-            lgstudent_to_delete = full[2]
+            
+            if full[2] == "none":
+                lgstudent_to_delete = None
+            else:   
+                lgstudent_to_delete = full[2]
+
             await message.answer(replyVyacheslav("gstudent_to_delete", message.from_user.id,fgstudent_to_delete,lgstudent_to_delete), reply_markup = yesnoKeyboard(message.from_user.id, "yesgstudent","nogroup"))
 
         elif message.text.startswith("@gupdate"):
@@ -528,6 +576,8 @@ async def uSure(call: types.CallbackQuery):
             cur.execute('''UPDATE Users
                             SET "group_id" = %s
                                 WHERE "id" = %s''', (group_id,call.from_user.id))
+
+            cur.execute('''UPDATE GROUPS SET "num_students" = "num_students" + 1 WHERE "group_id" = %s''',(group_id,))
             conn.commit()
             await call.message.delete()
             await call.message.answer(responses('group_success', call.from_user.id))
@@ -554,15 +604,28 @@ async def uSure(call: types.CallbackQuery):
     
     elif call.data == "yesgstudent":
         await call.message.delete()
-        cur.execute('''SELECT "group_type" FROM group_students WHERE "firstName" = %s and "lastName" = %s''',(fgstudent_to_delete, lgstudent_to_delete))
-        try:
-            type_group = cur.fetchone()[0]
-            cur.execute('''UPDATE USERS SET "group_id" = NULL WHERE "firstName" = %s and "lastName" = %s ''', (fgstudent_to_delete, lgstudent_to_delete))
-            conn.commit()
-            await call.message.answer(replyVyacheslav("gstudent_delete_success", call.from_user.id, fgstudent_to_delete, lgstudent_to_delete, type_group))
+        if lgstudent_to_delete is None:
+            cur.execute('''SELECT "group_type" FROM group_students WHERE "firstName" = %s and "lastName" is null''',(fgstudent_to_delete,))
+            try:
+                type_group = cur.fetchone()[0]
+                cur.execute('''UPDATE USERS SET "group_id" = NULL WHERE "firstName" = %s and "lastName" is null ''', (fgstudent_to_delete,))
+                cur.execute('''UPDATE GROUPS SET "num_students" = "num_students" - 1 WHERE "group_type" =  %s''',(type_group,))
+                conn.commit()
+                await call.message.answer(replyVyacheslav("gstudent_delete_success", call.from_user.id, fgstudent_to_delete, lgstudent_to_delete, type_group))
 
-        except:
-            await call.message.answer(replyVyacheslav("gstudent_to_delete_no_exist", call.from_user.id, fgstudent_to_delete,lgstudent_to_delete))
+            except:
+                await call.message.answer(replyVyacheslav("gstudent_to_delete_no_exist", call.from_user.id, fgstudent_to_delete,lgstudent_to_delete))
+        else:
+            cur.execute('''SELECT "group_type" FROM group_students WHERE "firstName" = %s and "lastName" = %s''',(fgstudent_to_delete, lgstudent_to_delete))
+            try:
+                type_group = cur.fetchone()[0]
+                cur.execute('''UPDATE USERS SET "group_id" = NULL WHERE "firstName" = %s and "lastName" = %s ''', (fgstudent_to_delete, lgstudent_to_delete))
+                cur.execute('''UPDATE GROUPS SET "num_students" = "num_students" - 1 WHERE "group_type" =  %s''',(type_group,))
+                conn.commit()
+                await call.message.answer(replyVyacheslav("gstudent_delete_success", call.from_user.id, fgstudent_to_delete, lgstudent_to_delete, type_group))
+
+            except:
+                await call.message.answer(replyVyacheslav("gstudent_to_delete_no_exist", call.from_user.id, fgstudent_to_delete,lgstudent_to_delete))
 
     elif call.data == "yesgupdate":
         await call.message.delete()
@@ -590,7 +653,6 @@ async def uSure(call: types.CallbackQuery):
         await call.message.delete()
         cur.execute('''SELECT "id" FROM SCHEDULE WHERE "firstName" = %s and "lastName" = %s''', (full[1], full[2]))
         if cur.fetchall() == []:
-            print("work")
             await call.message.answer(replyVyacheslav("student_doesn't_exist", call.from_user.id),reply_markup=yesnoKeyboard(call.from_user.id, "yessupdate_add", "nogroup"))
 
         else:
@@ -803,6 +865,16 @@ def responses(command, id):
             return "Выбери группу, про которую хотел бы узнать больше, и забронируй место, если понравиться😁"
         else:
             return "Select a group that you would like to explore and book a spot if you like it😁"
+    
+    elif str(command) == "group_is_full":
+        if lang == "eng":
+            return "I'm sorry... This group is already full. Contact the teacher, he might find a spot for you :) \n/contact"
+        elif lang == "ukr":
+            return "Вибач... Ця група вже заповнена. Зв'яжись з вчителем, можливо він знайде для тебе місце :) \n/contact"
+        elif lang == "ru":
+            return "Извини... Эта группа уже заполнена. Свяжись с учителем, он может найти для тебя место :) \n/contact"
+        else:
+            return  "I'm sorry... This group is already full. Contact the teacher, he might find a spot for you :) \n/contact"
 
     elif str(command) == "about_command":
         if lang == "eng":
@@ -1022,6 +1094,16 @@ def replyVyacheslav(*args):
             return f"Всего уроков: {args[2]}"
         else:
             return f"Total number of classes: {args[2]}"
+    
+    elif args[0] == "show_count_gstudents":
+        if lang == "eng":
+            return f"Total number of students: {args[2]}"
+        elif lang == "ukr":
+            return f"Всього учнів: {args[2]}"
+        elif lang == "ru":
+            return f"Всего учеников: {args[2]}"
+        else:
+            return f"Total number of students: {args[2]}"
 
     elif args[0] == "students_command":
         if lang == "eng":
@@ -1219,7 +1301,10 @@ def replyVyacheslav(*args):
 
     elif args[0] == "gstudent_to_delete":
         firstName = args[2].capitalize()
-        lastName = args[3].capitalize()
+        try:
+            lastName = args[3].capitalize()
+        except:
+            lastName = ""
         if lang == "eng":
             return f"Are you sure you want to remove {firstName} {lastName}?"
         elif lang == "ukr":
@@ -1231,7 +1316,10 @@ def replyVyacheslav(*args):
 
     elif args[0] == "gstudent_delete_success":
         firstName = args[2].capitalize()
-        lastName = args[3].capitalize()
+        try:    
+            lastName = args[3].capitalize()
+        except:
+            lastName = ""
         group_type = fullGroupType(lang, args[4])
         if lang == "eng":
             return f"Okay! {firstName} {lastName} has been removed from the {group_type} group"
@@ -1244,7 +1332,10 @@ def replyVyacheslav(*args):
     
     elif args[0] == "gstudent_to_delete_no_exist":
         firstName = args[2].capitalize()
-        lastName = args[3].capitalize()
+        try:
+            lastName = args[3].capitalize()
+        except: 
+            lastName = ""
         if lang == "eng":
             return f"{firstName} {lastName} doesn't seem to be in any group. Check your spelling, you might have typed the name wrong"
         elif lang == "ukr":
@@ -1289,7 +1380,7 @@ def replyVyacheslav(*args):
             return "Хм... Мне кажется, что этого класса НЕ существует. Вы хотели @add этот урок?"
         else:
             return "Hmm... It seems to me that this class does NOT exist. Did you mean to @add this class?"
-
+    
 def VyacheslavStudents(id,option):
     students = []
     cur.execute('''SELECT "lang" FROM Users WHERE "id" = %s''',(id,))
