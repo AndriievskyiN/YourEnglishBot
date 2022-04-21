@@ -1,6 +1,8 @@
+from threading import current_thread
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import psycopg2
+from regex import E
 from sqlalchemy import null
 
 # SETTING UP DATABASES
@@ -541,22 +543,72 @@ async def uSure(call: types.CallbackQuery):
         await call.message.answer(replyVyacheslav("nod", call.from_user.id))
 
     elif call.data == "yesg":
-        try:
-            if len(group_message) == 6:
-                cur.execute('''INSERT INTO Groups ("group_type", "day1", "hour1", "day2", "hour2")
-                                VALUES (%s,%s, %s, %s,%s)''',(group_message[1],group_message[2],group_message[3], group_message[4],group_message[5]))
-            elif len(group_message) == 8:
-                cur.execute('''INSERT INTO Groups ("group_type", "day1", "hour1", "day2", "hour2", "day3", "hour3")
-                                VALUES (%s,%s, %s, %s,%s,%s,%s)''',(group_message[1],group_message[2],group_message[3], group_message[4],group_message[5], group_message[6],group_message[7]))
-            conn.commit()
-            await call.message.delete()
-            await call.message.answer(replyVyacheslav("yesg", call.from_user.id,group_message[1]))
+        if len(group_message) == 6:
+            cur.execute('''SELECT * FROM GROUPS WHERE "day1" = %s and "hour1" = %s or "day2" = %s and "hour2" = %s''',(group_message[2],group_message[3], group_message[4],group_message[5]))
+        elif len(group_message) == 8:
+            cur.execute('''SELECT * FROM GROUPS WHERE "day1" = %s and "hour1" = %s or "day2" = %s and "hour2" or "day3" = %s and "hour3" = %s ''',(group_message[2],group_message[3], group_message[4],group_message[5], group_message[6],group_message[7]))
 
-        except: 
-            cur.execute("ROLLBACK")
-            conn.commit()   
+        cur_gschedule = cur.fetchall() 
+        if cur_gschedule != []:
             await call.message.delete()
-            await call.message.answer(replyVyacheslav("groupexists", call.from_user.id))
+            await call.message.answer(replyVyacheslav("group_time_exists",call.from_user.id, fullGroupType(call.from_user.id, cur_gschedule[0][1])))
+        
+        else:
+            def checkForTakenStudents():
+                taken_classes = []
+                valid_or_not = []
+                schedules = []
+                time1 = tuple(group_message[2:4])
+                time2 = tuple(group_message[4:6])
+                try:
+                    time3 = tuple(group_message[6:8])
+                except:
+                    pass
+                
+                try:
+                    schedules.append(time1)
+                    schedules.append(time2)
+                    schedules.append(time3)
+                except:
+                    schedules.append(time1)
+                    schedules.append(time2)
+
+                for i in schedules:
+                    if i == ():
+                        continue
+                    cur.execute('''SELECT "firstName", "lastName" FROM Schedule WHERE "day" = %s and "time" = %s''',(i))
+                    taken_class = cur.fetchone()
+                    taken_classes.append(taken_class)
+
+                    if not taken_class is None:
+                        valid_or_not.append("yes")
+
+                    for i in taken_classes:
+                        if i is None:
+                            continue
+                        class_taken = i
+                return valid_or_not, class_taken
+
+            if "yes" in checkForTakenStudents()[0]:
+                await call.message.delete()
+                await call.message.answer(replyVyacheslav("daytaken", call.from_user.id, checkForTakenStudents()[1][0],checkForTakenStudents()[1][1]))
+            else:
+                try:
+                    if len(group_message) == 6:
+                        cur.execute('''INSERT INTO Groups ("group_type", "day1", "hour1", "day2", "hour2")
+                                        VALUES (%s,%s, %s, %s,%s)''',(group_message[1],group_message[2],group_message[3], group_message[4],group_message[5]))
+                    elif len(group_message) == 8:
+                        cur.execute('''INSERT INTO Groups ("group_type", "day1", "hour1", "day2", "hour2", "day3", "hour3")
+                                        VALUES (%s,%s, %s, %s,%s,%s,%s)''',(group_message[1],group_message[2],group_message[3], group_message[4],group_message[5], group_message[6],group_message[7]))
+                    conn.commit()
+                    await call.message.delete()
+                    await call.message.answer(replyVyacheslav("yesg", call.from_user.id,group_message[1]))
+
+                except: 
+                    cur.execute("ROLLBACK")
+                    conn.commit()   
+                    await call.message.delete()
+                    await call.message.answer(replyVyacheslav("groupexists", call.from_user.id))
 
 
     elif call.data == "nog":
@@ -1380,7 +1432,17 @@ def replyVyacheslav(*args):
             return "Хм... Мне кажется, что этого класса НЕ существует. Вы хотели @add этот урок?"
         else:
             return "Hmm... It seems to me that this class does NOT exist. Did you mean to @add this class?"
-    
+
+    elif args[0] == "group_time_exists":
+        if lang == "eng":
+            return f"It seems that you already have the {args[2]} group at this time"
+        elif lang == "ukr":
+            return f'Схоже, у вас уже є група "{args[2]}" в цей час'
+        elif lang == "ru":
+            return f"Кажется, у вас уже есть группа {args[2]} в это время"
+        else:
+            return f"It seems that you already have the {args[2]} group at this time"
+
 def VyacheslavStudents(id,option):
     students = []
     cur.execute('''SELECT "lang" FROM Users WHERE "id" = %s''',(id,))
