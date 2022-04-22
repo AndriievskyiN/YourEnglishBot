@@ -1,9 +1,6 @@
-from threading import current_thread
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import psycopg2
-from regex import E
-from sqlalchemy import null
 
 # SETTING UP DATABASES
 conn = psycopg2.connect(
@@ -550,54 +547,65 @@ async def uSure(call: types.CallbackQuery):
 
     elif call.data == "yesg":
         if len(group_message) == 6:
-            cur.execute('''SELECT * FROM GROUPS WHERE "day1" = %s and "hour1" = %s or "day2" = %s and "hour2" = %s''',(group_message[2],group_message[3], group_message[4],group_message[5]))
-        elif len(group_message) == 8:
-            cur.execute('''SELECT * FROM GROUPS WHERE "day1" = %s and "hour1" = %s or "day2" = %s and "hour2" = %s or "day3" = %s and "hour3" = %s ''',(group_message[2],group_message[3], group_message[4],group_message[5], group_message[6],group_message[7]))
+            group_schedules = [(group_message[2],group_message[3]),(group_message[4],group_message[5])]
+            schedules = []
+            for i in group_schedules:
+                cur.execute('''SELECT * FROM GROUPS WHERE "day1" = %s and "hour1" = %s or "day2" = %s and "hour2" = %s''',(i[0], i[1],i[0], i[1]))
+                cur_gschedule = cur.fetchall() 
+                if cur_gschedule != []:
+                    schedules.append(cur_gschedule)
 
-        cur_gschedule = cur.fetchall() 
-        if cur_gschedule != []:
+        elif len(group_message) == 8:
+            group_schedules = [(group_message[2],group_message[3]),(group_message[4],group_message[5]),(group_message[6],group_message[7])]
+            schedules = []
+            for i in group_schedules:
+                cur.execute('''SELECT * FROM GROUPS WHERE "day1" = %s and "hour1" = %s or "day2" = %s and "hour2" = %s or "day3" = %s and "hour3" = %s''',(i[0], i[1],i[0], i[1], i[0],i[1]))
+                cur_gschedule = cur.fetchall() 
+                if cur_gschedule != []:
+                    schedules.append(cur_gschedule)
+
+        if schedules != []:
             await call.message.delete()
-            await call.message.answer(replyVyacheslav("group_time_exists",call.from_user.id, fullGroupType(call.from_user.id, cur_gschedule[0][1])))
+            await call.message.answer(replyVyacheslav("group_time_exists",call.from_user.id, fullGroupType(call.from_user.id, schedules[0][0][1])))
         
         else:
-            def checkForTakenStudents():
-                taken_classes = []
-                valid_or_not = []
-                schedules = []
-                time1 = tuple(group_message[2:4])
-                time2 = tuple(group_message[4:6])
-                try:
-                    time3 = tuple(group_message[6:8])
-                except:
-                    pass
-                
-                try:
-                    schedules.append(time1)
-                    schedules.append(time2)
-                    schedules.append(time3)
-                except:
-                    schedules.append(time1)
-                    schedules.append(time2)
+            taken_classes = []
+            valid_or_not = []
+            schedules = []
+            time1 = tuple(group_message[2:4])
+            time2 = tuple(group_message[4:6])
+            try:
+                time3 = tuple(group_message[6:8])
+            except:
+                pass
+            
+            try:
+                schedules.append(time1)
+                schedules.append(time2)
+                schedules.append(time3)
+            except:
+                schedules.append(time1)
+                schedules.append(time2)
 
-                for i in schedules:
-                    if i == ():
+            for i in schedules:
+                if i == ():
+                    continue
+                cur.execute('''SELECT "firstName", "lastName" FROM Schedule WHERE "day" = %s and "time" = %s''',(i))
+                global class_taken
+                taken_class = cur.fetchone()
+                taken_classes.append(taken_class)
+
+                if not taken_class is None:
+                    valid_or_not.append("yes")
+
+            if "yes" in valid_or_not:
+                for i in taken_classes:
+                    if i is None:
                         continue
-                    cur.execute('''SELECT "firstName", "lastName" FROM Schedule WHERE "day" = %s and "time" = %s''',(i))
-                    taken_class = cur.fetchone()
-                    taken_classes.append(taken_class)
-
-                    if not taken_class is None:
-                        valid_or_not.append("yes")
-
-                    for i in taken_classes:
-                        if i is None:
-                            continue
-                        class_taken = i
-                return valid_or_not, class_taken
-
-            if "yes" in checkForTakenStudents()[0]:
+                    class_taken = i
                 await call.message.delete()
-                await call.message.answer(replyVyacheslav("daytaken", call.from_user.id, checkForTakenStudents()[1][0],checkForTakenStudents()[1][1]))
+                await call.message.answer(replyVyacheslav("daytaken", call.from_user.id, class_taken[0], class_taken[1]))
+                #return valid_or_not, class_taken
             else:
                 try:
                     if len(group_message) == 6:
