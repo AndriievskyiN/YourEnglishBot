@@ -455,9 +455,15 @@ async def messages(message: types.Message):
                 class_ = cur.fetchone()
                 if not class_ is None:
                     await message.answer(replyVyacheslav("daytaken", message.from_user.id, class_[0],class_[1]))
-
+                
                 else:
-                    await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id, "yesb", "nob"))
+                    cur.execute('''SELECT * FROM GROUPS WHERE "day1" = %s and "hour1" = %s or "day2" = %s and "hour2" = %s or "day3" = %s and "hour3" = %s''',(daydb, hour,daydb, hour,daydb, hour))
+                    classes = cur.fetchall()
+                    if not classes is None:
+                        await message.answer(replyVyacheslav("group_time_exists",message.from_user.id, fullGroupType(message.from_user.id, classes[0][1])))
+                    
+                    else:
+                        await message.answer(replyVyacheslav("vyacheslav_sure", message.from_user.id, message.text), reply_markup=yesnoKeyboard(message.from_user.id, "yesb", "nob"))
 
         elif message.text.startswith("@cancel"):
                 global splitted
@@ -546,7 +552,7 @@ async def uSure(call: types.CallbackQuery):
         if len(group_message) == 6:
             cur.execute('''SELECT * FROM GROUPS WHERE "day1" = %s and "hour1" = %s or "day2" = %s and "hour2" = %s''',(group_message[2],group_message[3], group_message[4],group_message[5]))
         elif len(group_message) == 8:
-            cur.execute('''SELECT * FROM GROUPS WHERE "day1" = %s and "hour1" = %s or "day2" = %s and "hour2" or "day3" = %s and "hour3" = %s ''',(group_message[2],group_message[3], group_message[4],group_message[5], group_message[6],group_message[7]))
+            cur.execute('''SELECT * FROM GROUPS WHERE "day1" = %s and "hour1" = %s or "day2" = %s and "hour2" = %s or "day3" = %s and "hour3" = %s ''',(group_message[2],group_message[3], group_message[4],group_message[5], group_message[6],group_message[7]))
 
         cur_gschedule = cur.fetchall() 
         if cur_gschedule != []:
