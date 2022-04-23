@@ -1,3 +1,4 @@
+from pickletools import read_unicodestring1
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import psycopg2
@@ -429,6 +430,13 @@ async def manage_students(call: types.CallbackQuery):
             count += 1
         await call.message.answer(replyVyacheslav("show_count", call.from_user.id,count))
 
+# GET THE LIST OF ALL COMMANDS FOR VYACHESLAV
+@dp.message_handler(commands=["commands"])
+async def see_all_commands(message: types.Message):
+    if message.from_user.id == 467337605 or message.from_user.id == 579467950:
+        await message.answer(replyVyacheslav("see_all_commands", message.from_user.id))
+    else:
+        await message.answer(responses(message.text, message.from_user.id))
 
 # MANAGING REGULAR MESSAGES AND SPECIAL COMMANDS
 @dp.message_handler()
@@ -1480,6 +1488,16 @@ def replyVyacheslav(*args):
             return f'{firstName} {lastName} забронировал занятие в группе "{fullGroup}" '
         else:
             return f"{firstName} {lastName} has booked a class in the {fullGroup} group"
+
+    elif args[0] == "see_all_commands":
+        if lang == "eng":
+            return "@add - add a regular class \n@cancel - cancel a regular class \n/students - see a list of students \n@group+ add a group \n@group- remove a group \n/groups - see all groups \n@gstudent- remove a student from a group \n/gstudents - see a list of students in groups \n@gupdate - update a group \n@supdate - update a regular class \n\n-------------------------------------------------------------\nTo see examples and syntax for the commands, read this documentation: \n\nhttps://ginger-beluga-dbb.notion.site/Personal-commands-for-Vyacheslav-e6e37ed695094f05bb7caae851627045"
+        elif lang == "ukr":
+            return "@add - додати звичайний клас \n@cancel - скасувати звичайний клас \n/students - переглянути список студентів \n@group+ додати групу \n@group- видалити групу \n/groups - переглянути всі групи \n@gstudent- видалити учня з групи \n/gstudents - переглянути список студентів у групах \n@gupdate - оновити групу \n@supdate - оновити звичайний клас \n\n----------------------------------------------------------------------\nЩоб побачити приклади та синтаксис команд, прочитайте цю документацію: \n\nhttps://ginger-beluga-dbb.notion.site/Personal-commands-for-Vyacheslav-e6e37ed695094f05bb7caae851627045"
+        elif lang == "ru":
+            return "@add – добавить обычный курс \n@cancel – отменить обычный курс \n/students – просмотреть список учащихся \n@group+ добавить группу \n@group – удалить группу \n/groups – просмотреть все группы \n@gstudent — удалить ученика из группы \n/gstudents — просмотреть список учеников в группах \n@gupdate — обновить группу \n@supdate — обновить обычный класс \n\n----------------------------------------------\nЧтобы увидеть примеры и синтаксис команд, прочтите эту документацию: \n\nhttps://ginger-beluga-dbb.notion.site/Personal-commands-for-Vyacheslav-e6e37ed695094f05bb7caae851627045"
+        else:
+            return "@add - add a regular class \n@cancel - cancel a regular class \n/students - see a list of students \n@group+ add a group \n@group- remove a group \n/groups - see all groups \n@gstudent- remove a student from a group \n/gstudents - see a list of students in groups \n@gupdate - update a group \n@supdate - update a regular class \n\n-------------------------------------------------------------\nTo see examples and syntax for the commands, read this documentation: \n\nhttps://ginger-beluga-dbb.notion.site/Personal-commands-for-Vyacheslav-e6e37ed695094f05bb7caae851627045"
 
 def VyacheslavStudents(id,option):
     students = []
