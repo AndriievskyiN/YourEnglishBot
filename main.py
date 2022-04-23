@@ -1,6 +1,7 @@
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import psycopg2
+import requests
 
 # SETTING UP DATABASES
 conn = psycopg2.connect(
@@ -456,7 +457,7 @@ async def messages(message: types.Message):
                 else:
                     cur.execute('''SELECT * FROM GROUPS WHERE "day1" = %s and "hour1" = %s or "day2" = %s and "hour2" = %s or "day3" = %s and "hour3" = %s''',(daydb, hour,daydb, hour,daydb, hour))
                     classes = cur.fetchall()
-                    if not classes is None:
+                    if classes != []:
                         await message.answer(replyVyacheslav("group_time_exists",message.from_user.id, fullGroupType(message.from_user.id, classes[0][1])))
                     
                     else:
@@ -645,8 +646,15 @@ async def uSure(call: types.CallbackQuery):
 
             cur.execute('''UPDATE GROUPS SET "num_students" = "num_students" + 1 WHERE "group_id" = %s''',(group_id,))
             conn.commit()
+
             await call.message.delete()
             await call.message.answer(responses('group_success', call.from_user.id))
+            cur.execute('''SELECT * FROM USERS WHERE "id" = %s''',(call.from_user.id,))
+            new_user = cur.fetchone()
+            cur.execute('''SELECT "group_type" FROM GROUPS WHERE "group_id" = %s''',(group_id,))
+            group_type = cur.fetchone()[0]
+            message = replyVyacheslav("new_student_group", 467337605, new_user, group_type)
+            requests.post(f"https://api.telegram.org/bot5108593896:AAFrhYyfeqXLolGlyzOqNgxysSJwfg578-0/sendMessage?chat_id=579467950&text={message}")
 
     elif call.data == "yesgd":
 
@@ -1456,6 +1464,22 @@ def replyVyacheslav(*args):
             return f"Кажется, у вас уже есть группа {args[2]} в это время"
         else:
             return f"It seems that you already have the {args[2]} group at this time"
+    
+    elif args[0] == "new_student_group":
+        firstName = str(args[2][1]).capitalize()
+        lastName = str(args[2][2]).capitalize()
+        if lastName is None:
+            lastName = ""
+        fullGroup = fullGroupType(lang, args[3])
+
+        if lang == "eng":
+            return f"{firstName} {lastName} has booked a class in the {fullGroup} group"
+        elif lang == "ukr":
+            return f'{firstName} {lastName} забронював урок у групі "{fullGroup}" '
+        elif lang == "ru":
+            return f'{firstName} {lastName} забронировал занятие в группе "{fullGroup}" '
+        else:
+            return f"{firstName} {lastName} has booked a class in the {fullGroup} group"
 
 def VyacheslavStudents(id,option):
     students = []
