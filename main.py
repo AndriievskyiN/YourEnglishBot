@@ -100,6 +100,9 @@ async def welcome(message: types.Message):
         await message.answer(f"Hello {firstName.capitalize()}! \n\nAre you ready to test the bot?)) \nClick /help to see regular commands \nClick /commands to see admin commands")
     elif message.from_user.id == 467337605:
         await message.answer(f"Hello {firstName.capitalize()}! \n\nTo see your personal commands, click /commands")
+    elif message.from_user.id == 520818378:
+        await message.answer(f"Hello {firstName.capitalize()}! \n\nThis is a special start command for you) \nTo see more commands, click \n/help \n\nP.S. There is a personal command for you)) click /masha")
+
     else:
         if lang == "eng":
             await message.answer(f"Hello {firstName.capitalize()}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters type /help")
@@ -435,6 +438,21 @@ async def see_all_commands(message: types.Message):
         await message.answer(replyVyacheslav("see_all_commands", message.from_user.id))
     else:
         await message.answer(responses(message.text, message.from_user.id))
+
+#SPECIAL COMMAND FOR SASHA
+@dp.message_handler(commands=["sasha"])
+async def sasha_command(message: types.Message):
+    if message.from_user.id == 579467950 or message.from_user.id == 626136941:
+        await message.answer("Не хочешь созвониться?😅")
+        await message.answer_photo("https://lh3.googleusercontent.com/ExaJRWmGiRTbcOG428B3-mAW49Q3iJl2lgwxIzyVHucDpwk3lsLtariDFAd3kgXZ4pWqqpRSRMwukHHyQ0HKp1c6OH35DvOnBSuqh7Htzn7F1JlgsLwA4pFwQr7Vc9-BWCZFkIe7MWvgNzjkPD0R_PC4hfRwG05X8n1PY1f7Oh-X0BwIw1_JMEzycFNYErkexG71hPCGKjZuyJXIGCNZyU87UHUcmMO2lV12owrN8v2BitH-TlQ3jYwYZGxtQcDAk3vLsewJxAmUE1vaghRFBYZhXmIkrDT3HIDP1iuyLVv-NWK5TOWj6rQujuUWOQVtIzMT-My7XSnhtSg_-veEWv0CiHAl8PI_gFyPpcje5_GYvnHHPFH_wb6uCeOKt0AgOunXW2HOxdMuV3pZtIszRn6f4PJ-OqJ6izqeUTpUQKFn4lhig-yJHgXJxdJwqooOekLBJxX11OGquiEKpcF4OIPu7fdMvTwr-HAdS5sypykn4V0V4wD1Ajz8OQHRaienFXo73bAS1AAUDaBY5hhZG0w9v4_oLV1-6zbePBS01CSh1oZJOQ3kaIErcBoOLxfSm-W9Z339Q_4VDJpyQ9f043CELDkubeBhabJLmWT6mReHyrLUfFMzoqeeFkB8EQliJdQv1IXZObpX-cXmvKctklFA8PuCXvNJp2Iu-AIXxdrh95Af7glMCOyO_ygAPSrxcGobE3fhncsyQk7uVdHJtaOa8wDtAuNvyX4W6eRGcUiH4l_uMXWiIzqQO-Lsks5v6fqLQ3S3sr0Dyy7Pl-SZBxslttM1XBBc4JkBMQ=w614-h1280-no?authuser=0")
+    else:
+        await message.answer(responses(message.text, message.from_user.id))
+
+#SPECIAL COMMAND FOR MASHA
+@dp.message_handler(commands=["masha"])
+async def sasha_command(message: types.Message):
+    if message.from_user.id == 579467950 or message.from_user.id == 520818378:
+        await message.answer_photo("https://lh3.googleusercontent.com/ExaJRWmGiRTbcOG428B3-mAW49Q3iJl2lgwxIzyVHucDpwk3lsLtariDFAd3kgXZ4pWqqpRSRMwukHHyQ0HKp1c6OH35DvOnBSuqh7Htzn7F1JlgsLwA4pFwQr7Vc9-BWCZFkIe7MWvgNzjkPD0R_PC4hfRwG05X8n1PY1f7Oh-X0BwIw1_JMEzycFNYErkexG71hPCGKjZuyJXIGCNZyU87UHUcmMO2lV12owrN8v2BitH-TlQ3jYwYZGxtQcDAk3vLsewJxAmUE1vaghRFBYZhXmIkrDT3HIDP1iuyLVv-NWK5TOWj6rQujuUWOQVtIzMT-My7XSnhtSg_-veEWv0CiHAl8PI_gFyPpcje5_GYvnHHPFH_wb6uCeOKt0AgOunXW2HOxdMuV3pZtIszRn6f4PJ-OqJ6izqeUTpUQKFn4lhig-yJHgXJxdJwqooOekLBJxX11OGquiEKpcF4OIPu7fdMvTwr-HAdS5sypykn4V0V4wD1Ajz8OQHRaienFXo73bAS1AAUDaBY5hhZG0w9v4_oLV1-6zbePBS01CSh1oZJOQ3kaIErcBoOLxfSm-W9Z339Q_4VDJpyQ9f043CELDkubeBhabJLmWT6mReHyrLUfFMzoqeeFkB8EQliJdQv1IXZObpX-cXmvKctklFA8PuCXvNJp2Iu-AIXxdrh95Af7glMCOyO_ygAPSrxcGobE3fhncsyQk7uVdHJtaOa8wDtAuNvyX4W6eRGcUiH4l_uMXWiIzqQO-Lsks5v6fqLQ3S3sr0Dyy7Pl-SZBxslttM1XBBc4JkBMQ=w614-h1280-no?authuser=0")
 
 # MANAGING REGULAR MESSAGES AND SPECIAL COMMANDS
 @dp.message_handler()
@@ -1096,6 +1114,10 @@ My big goal is to teach as many people as I can to make Ukraine an English speak
             return "Привіт!"
         elif str(command).lower() in hi_ru:
             return 'Привет!'
+        elif command == "😘" or command == "😚":
+            return "😁"
+        elif str(command).lower() == "who are you?" or str(command).lower() == "who are you":
+            return "I'm Your English Bro Bot"
         else:
             if lang == "eng":
                 return "I'm sorry... I don't understand what you mean :("
