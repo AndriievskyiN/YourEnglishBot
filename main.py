@@ -1,6 +1,7 @@
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import psycopg2
+import requests
 
 
 # SETTING UP DATABASES
@@ -95,14 +96,19 @@ async def welcome(message: types.Message):
         except:
             lastName = None
 
-    if lang == "eng":
-        await message.answer(f"Hello {firstName.capitalize()}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters type /help")
-    elif lang == "ukr":
-        await message.answer(f"Привіт {firstName.capitalize()}!\nЯ твій English Bro Bot 🤖 \nЯк ся маєш? \nДля початку введи /help")
-    elif lang == "ru":
-        await message.answer(f"Привет {firstName.capitalize()}!\nЯ твой English Bro Bot 🤖\nКак дела? \nДля начала нажми /help")
+    if message.from_user.id == 626136941:
+        await message.answer(f"Hello {firstName.capitalize()}! \n\nAre you ready to test the bot?)) \nClick /help to see regular commands \nClick /commands to see admin commands")
+    elif message.from_user.id == 467337605:
+        await message.answer(f"Hello {firstName.capitalize()}! \n\nTo see your personal commands, click /commands")
     else:
-        await message.answer(f"Hello {firstName.capitalize()}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters /help")
+        if lang == "eng":
+            await message.answer(f"Hello {firstName.capitalize()}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters type /help")
+        elif lang == "ukr":
+            await message.answer(f"Привіт {firstName.capitalize()}!\nЯ твій English Bro Bot 🤖 \nЯк ся маєш? \nДля початку введи /help")
+        elif lang == "ru":
+            await message.answer(f"Привет {firstName.capitalize()}!\nЯ твой English Bro Bot 🤖\nКак дела? \nДля начала нажми /help")
+        else:
+            await message.answer(f"Hello {firstName.capitalize()}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters /help")
 
     cur.execute('''INSERT INTO USERS ("id","firstName", "lastName", "lang")
                     VALUES (%s,%s,%s,%s)
@@ -383,7 +389,7 @@ async def groups(call: types.CallbackQuery):
 # GROUPS COMMAND FOR VYACHESLAV
 @dp.message_handler(commands=["groups"])
 async def groups(message: types.Message):
-    if message.from_user.id == 579467950 or message.from_user.id == 467337605 or message.from_user.id:
+    if message.from_user.id == 579467950 or message.from_user.id == 467337605 or message.from_user.id == 626136941:
         cur.execute('''SELECT
                             * 
                         FROM
@@ -425,7 +431,7 @@ async def manage_students(call: types.CallbackQuery):
 # GET THE LIST OF ALL COMMANDS FOR VYACHESLAV
 @dp.message_handler(commands=["commands"])
 async def see_all_commands(message: types.Message):
-    if message.from_user.id == 467337605 or message.from_user.id == 579467950:
+    if message.from_user.id == 467337605 or message.from_user.id == 579467950 or message.from_user.id == 626136941:
         await message.answer(replyVyacheslav("see_all_commands", message.from_user.id))
     else:
         await message.answer(responses(message.text, message.from_user.id))
@@ -433,7 +439,7 @@ async def see_all_commands(message: types.Message):
 # MANAGING REGULAR MESSAGES AND SPECIAL COMMANDS
 @dp.message_handler()
 async def messages(message: types.Message):
-    if message.from_user.id == 467337605 or message.from_user.id == 579467950:
+    if message.from_user.id == 467337605 or message.from_user.id == 579467950 or message.from_user.id == 626136941:
         # MANAGING COMMANDS FOR VYACHESLAV
         if message.text.startswith("@add"):
                 global full
