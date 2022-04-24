@@ -711,25 +711,85 @@ async def uSure(call: types.CallbackQuery):
 
     elif call.data == "yesgupdate":
         await call.message.delete()
-        cur.execute('''SELECT "group_id" FROM GROUPS WHERE "group_type" = %s''', (full[1],))
-        if cur.fetchall() == []:
-            if len(full) == 6:
-                cur.execute('''INSERT INTO Groups ("group_type", "day1", "hour1", "day2", "hour2")
-                            VALUES (%s,%s, %s, %s,%s)''',(full[1],full[2],full[3], full[4],full[5]))
-            elif len(full) == 8:
-                cur.execute('''INSERT INTO Groups ("group_type", "day1", "hour1", "day2", "hour2", "day3", "hour3")
-                                VALUES (%s,%s, %s, %s,%s,%s,%s)''',(full[1],full[2],full[3], full[4],full[5], full[6],full[7]))
-            conn.commit()
-            await call.message.answer(replyVyacheslav("yesg", call.from_user.id,full[1]))
 
+        # FIX HERE  (THE PROBLEM IS THAT I HAVE TO LOOP THROUGH EACH CLASS_ )
+        if len(full) == 6:
+            group_schedules = [(full[2],full[3]),(full[4],full[5])]
+            schedules = []
+            for i in group_schedules:
+                cur.execute('''SELECT * FROM GROUPS WHERE "day1" = %s and "hour1" = %s or "day2" = %s and "hour2" = %s''',(i[0], i[1],i[0], i[1]))
+                cur_gschedule = cur.fetchall() 
+                if cur_gschedule != []:
+                    schedules.append(cur_gschedule)
+
+        elif len(full) == 8:
+            group_schedules = [(full[2],full[3]),(full[4],full[5]),(full[6],full[7])]
+            schedules = []
+            for i in group_schedules:
+                cur.execute('''SELECT * FROM GROUPS WHERE "day1" = %s and "hour1" = %s or "day2" = %s and "hour2" = %s or "day3" = %s and "hour3" = %s''',(i[0], i[1],i[0], i[1], i[0],i[1]))
+                cur_gschedule = cur.fetchall() 
+                if cur_gschedule != []:
+                    schedules.append(cur_gschedule)
+
+        if schedules != []:
+            await call.message.answer(replyVyacheslav("group_time_exists",call.from_user.id, fullGroupType(call.from_user.id, schedules[0][0][1])))
+        
         else:
-            if len(full) == 6:
-                cur.execute('''UPDATE GROUPS SET "day1" = %s, "hour1" = %s, "day2" = %s, "hour2" = %s, "day3" = null, "hour3" = null WHERE "group_type" = %s''', (full[2],full[3], full[4],full[5], full[1]))
-            elif len(full) == 8:
-                cur.execute('''UPDATE GROUPS SET "day1" = %s, "hour1" = %s, "day2" = %s, "hour2" = %s, "day3" = %s, "hour3" = %s WHERE "group_type" = %s''', (full[2],full[3], full[4],full[5],full[6], full[7], full[1]))
+            taken_classes = []
+            valid_or_not = []
+            schedules = []
+            time1 = tuple(full[2:4])
+            time2 = tuple(full[4:6])
+            try:
+                time3 = tuple(full[6:8])
+            except:
+                pass
+            
+            try:
+                schedules.append(time1)
+                schedules.append(time2)
+                schedules.append(time3)
+            except:
+                schedules.append(time1)
+                schedules.append(time2)
 
-            conn.commit()
-            await call.message.answer(replyVyacheslav("gupdate_success", call.from_user.id,full[1]))
+            for i in schedules:
+                if i == ():
+                    continue
+                cur.execute('''SELECT "firstName", "lastName" FROM Schedule WHERE "day" = %s and "time" = %s''',(i))
+                taken_class = cur.fetchone()
+                taken_classes.append(taken_class)
+
+                if not taken_class is None:
+                    valid_or_not.append("yes")
+
+            if "yes" in valid_or_not:
+                for i in taken_classes:
+                    if i is None:
+                        continue
+                    class_taken = i
+                await call.message.answer(replyVyacheslav("daytaken", call.from_user.id, class_taken[0], class_taken[1]))
+                
+            else:
+                cur.execute('''SELECT "group_id" FROM GROUPS WHERE "group_type" = %s''', (full[1],))
+                if cur.fetchall() == []:
+                    if len(full) == 6:
+                        cur.execute('''INSERT INTO Groups ("group_type", "day1", "hour1", "day2", "hour2")
+                                    VALUES (%s,%s, %s, %s,%s)''',(full[1],full[2],full[3], full[4],full[5]))
+                    elif len(full) == 8:
+                        cur.execute('''INSERT INTO Groups ("group_type", "day1", "hour1", "day2", "hour2", "day3", "hour3")
+                                        VALUES (%s,%s, %s, %s,%s,%s,%s)''',(full[1],full[2],full[3], full[4],full[5], full[6],full[7]))
+                    conn.commit()
+                    await call.message.answer(replyVyacheslav("yesg", call.from_user.id,full[1]))
+
+                else:
+                    if len(full) == 6:
+                        cur.execute('''UPDATE GROUPS SET "day1" = %s, "hour1" = %s, "day2" = %s, "hour2" = %s, "day3" = null, "hour3" = null WHERE "group_type" = %s''', (full[2],full[3], full[4],full[5], full[1]))
+                    elif len(full) == 8:
+                        cur.execute('''UPDATE GROUPS SET "day1" = %s, "hour1" = %s, "day2" = %s, "hour2" = %s, "day3" = %s, "hour3" = %s WHERE "group_type" = %s''', (full[2],full[3], full[4],full[5],full[6], full[7], full[1]))
+
+                    conn.commit()
+                    await call.message.answer(replyVyacheslav("gupdate_success", call.from_user.id,full[1]))
 
     elif call.data == "yessupdate":
         await call.message.delete()
@@ -738,17 +798,43 @@ async def uSure(call: types.CallbackQuery):
             await call.message.answer(replyVyacheslav("student_doesn't_exist", call.from_user.id),reply_markup=yesnoKeyboard(call.from_user.id, "yessupdate_add", "nogroup"))
 
         else:
-            cur.execute('''UPDATE SCHEDULE SET "day" = %s, time = %s''',(full[3], full[4]))
-            conn.commit()
-            await call.message.answer(replyVyacheslav("supdate_success", call.from_user.id, full))
+            # DUPLICATE VALIDATION
+            cur.execute('''SELECT "firstName", "lastName" FROM Schedule WHERE "day" = %s and "time" = %s''',(full[3], full[4]))
+            class_ = cur.fetchone()
+            if not class_ is None:
+                await call.message.answer(replyVyacheslav("daytaken", call.from_user.id, class_[0],class_[1]))
+            
+            else:
+                cur.execute('''SELECT * FROM GROUPS WHERE "day1" = %s and "hour1" = %s or "day2" = %s and "hour2" = %s or "day3" = %s and "hour3" = %s''',(full[3], full[4],full[3], full[4],full[3], full[4]))
+                classes = cur.fetchall()
+                if classes != []:
+                    await call.message.answer(replyVyacheslav("group_time_exists",call.from_user.id, fullGroupType(call.from_user.id, classes[0][1])))
+                else:
+
+                    cur.execute('''UPDATE SCHEDULE SET "day" = %s, time = %s''',(full[3], full[4]))
+                    conn.commit()
+                    await call.message.answer(replyVyacheslav("supdate_success", call.from_user.id, full))
 
     elif call.data == "yessupdate_add":
         await call.message.delete()
-        cur.execute('''INSERT INTO SCHEDULE ("firstName", "lastName", "day", "time") 
-                        VALUES (%s,%s,%s,%s)''',(full[1], full[2],full[3], full[4]))
-        conn.commit()
+        # DUPLICATE VALIDATION
+        cur.execute('''SELECT "firstName", "lastName" FROM Schedule WHERE "day" = %s and "time" = %s''',(full[3], full[4]))
+        class_ = cur.fetchone()
+        if not class_ is None:
+            await call.message.answer(replyVyacheslav("daytaken", call.from_user.id, class_[0],class_[1]))
+        
+        else:
+            cur.execute('''SELECT * FROM GROUPS WHERE "day1" = %s and "hour1" = %s or "day2" = %s and "hour2" = %s or "day3" = %s and "hour3" = %s''',((full[3], full[4],full[3], full[4],full[3], full[4])))
+            classes = cur.fetchall()
+            if classes != []:
+                await call.message.answer(replyVyacheslav("group_time_exists",call.from_user.id, fullGroupType(call.from_user.id, classes[0][1])))
+            else:
 
-        await call.message.answer(replyVyacheslav("vyacheslav_add", call.from_user.id, full))
+                cur.execute('''INSERT INTO SCHEDULE ("firstName", "lastName", "day", "time") 
+                                VALUES (%s,%s,%s,%s)''',(full[1], full[2],full[3], full[4]))
+                conn.commit()
+
+                await call.message.answer(replyVyacheslav("vyacheslav_add", call.from_user.id, full))
 
 def responses(command, id):
     cur.execute("ROLLBACK")
