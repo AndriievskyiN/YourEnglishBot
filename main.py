@@ -268,7 +268,7 @@ async def manage_classinfo(call: types.CallbackQuery):
 # STUDENTS COMMAND FOR VYACHESLAV
 @dp.message_handler(commands=["students"])
 async def students(message: types.Message):
-    if message.from_user.id == 579467950 or message.from_user.id == 467337605:
+    if message.from_user.id == 579467950 or message.from_user.id == 467337605 or message.from_user.id == 626136941:
         await message.answer(replyVyacheslav("students_command",message.from_user.id), reply_markup=studentsKeyboard(message.from_user.id))
     else:
         await message.answer(responses(message.text, message.from_user.id))
@@ -276,7 +276,7 @@ async def students(message: types.Message):
 # GROUP STUDENTS FOR VYEACHESLAV
 @dp.message_handler(commands=["gstudents"])
 async def groupStudents(message: types.Message):
-    if message.from_user.id == 579467950 or message.from_user.id == 467337605:
+    if message.from_user.id == 579467950 or message.from_user.id == 467337605 or message.from_user.id == 626136941:
         cur.execute("SELECT * FROM GROUPS")
         groups = cur.fetchall()
 
@@ -292,7 +292,7 @@ async def groupStudents(message: types.Message):
 # MANAGING GSTUDENTS BUTTONS
 @dp.callback_query_handler(text=["allgstudents", "elgstudents", "intgstudents","uintgstudents", "gbgstudents"])
 async def groups(call: types.CallbackQuery):
-    if call.from_user.id == 579467950 or call.from_user.id == 467337605:
+    if call.from_user.id == 579467950 or call.from_user.id == 467337605 or call.from_user.id == 626136941:
 
         cur.execute('SELECT lang FROM Users WHERE "id" = %s',(call.from_user.id,))
         try:
@@ -383,7 +383,7 @@ async def groups(call: types.CallbackQuery):
 # GROUPS COMMAND FOR VYACHESLAV
 @dp.message_handler(commands=["groups"])
 async def groups(message: types.Message):
-    if message.from_user.id == 579467950 or message.from_user.id == 467337605:
+    if message.from_user.id == 579467950 or message.from_user.id == 467337605 or message.from_user.id:
         cur.execute('''SELECT
                             * 
                         FROM
