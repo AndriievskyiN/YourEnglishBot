@@ -5,10 +5,10 @@ import psycopg2
 
 # SETTING UP DATABASES
 conn = psycopg2.connect(
-    host = "localhost",
-    dbname = "EnglishTelebot",
-    user = "andriievskyi",
-    password = "Kakady33dyno",
+    host = "ec2-3-209-124-113.compute-1.amazonaws.com",
+    dbname = "d3eann5d8427uq",
+    user = "ewtntnvqbwrwew",
+    password = "b2cc200fec40f03a7ac818a65a2758eb1f17a76c1634ed56dc84fc73433297af",
     port = 5432
 )
 cur = conn.cursor()
