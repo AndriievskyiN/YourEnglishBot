@@ -1,7 +1,7 @@
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import psycopg2
-import requests
+#import requests
 
 
 # SETTING UP DATABASES
@@ -678,7 +678,7 @@ async def uSure(call: types.CallbackQuery):
             cur.execute('''SELECT "group_type" FROM GROUPS WHERE "group_id" = %s''',(group_id,))
             group_type = cur.fetchone()[0]
             message = replyVyacheslav("new_student_group", 467337605, new_user, group_type)
-            requests.post(f"https://api.telegram.org/bot5108593896:AAFrhYyfeqXLolGlyzOqNgxysSJwfg578-0/sendMessage?chat_id=579467950&text={message}")
+            #requests.post(f"https://api.telegram.org/bot5108593896:AAFrhYyfeqXLolGlyzOqNgxysSJwfg578-0/sendMessage?chat_id=579467950&text={message}")
 
     elif call.data == "yesgd":
 
