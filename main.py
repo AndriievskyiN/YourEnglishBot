@@ -1,8 +1,7 @@
-from pickletools import read_unicodestring1
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import psycopg2
-import requests
+
 
 # SETTING UP DATABASES
 conn = psycopg2.connect(
