@@ -104,19 +104,12 @@ async def welcome(message: types.Message):
     else:
         await message.answer(f"Hello {firstName.capitalize()}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters /help")
 
-    cur.execute('''INSERT INTO USERS ("id","firstName", "lastName")
-                    VALUES (%s,%s,%s)
+    cur.execute('''INSERT INTO USERS ("id","firstName", "lastName", "lang")
+                    VALUES (%s,%s,%s,%s)
                     ON CONFLICT ("id") 
                         DO UPDATE
                             SET "firstName" = EXCLUDED."firstName",
-                                "lastName" = EXCLUDED."lastName" ''',(message.from_user.id,firstName,lastName))
-        
-    cur.execute('''INSERT INTO Users ("id","firstName", "lastName")
-        VALUES (%s,%s,%s)
-        ON CONFLICT ("id") 
-            DO UPDATE
-                SET "firstName" = EXCLUDED."firstName",
-                    "lastName" = EXCLUDED."lastName"''',(message.from_user.id, firstName, lastName))
+                                "lastName" = EXCLUDED."lastName" ''',(message.from_user.id,firstName,lastName, "eng"))
     conn.commit()
 
 # LANG COMMAND
