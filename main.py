@@ -15,7 +15,7 @@ import requests
 
 conn = psycopg2.connect(
     host = "localhost",
-    dbname = "postgres",
+    dbname = "EnglishTelebot",
     user = "andriievskyi",
     password = "Kakady33dyno",
     port = 5432
