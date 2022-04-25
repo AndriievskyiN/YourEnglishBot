@@ -6,10 +6,10 @@ import requests
 
 # SETTING UP DATABASES
 conn = psycopg2.connect(
-    host = "ec2-3-209-124-113.compute-1.amazonaws.com",
-    dbname = "d3eann5d8427uq",
-    user = "ewtntnvqbwrwew",
-    password = "b2cc200fec40f03a7ac818a65a2758eb1f17a76c1634ed56dc84fc73433297af",
+    host = "ec2-54-80-122-11.compute-1.amazonaws.com",
+    dbname = "d42figpgm7dkp8",
+    user = "nkcldgoavhrunf",
+    password = "08cccad3c70a701ff647b89f5fa8e7c37f53302a9814ad5a5e5f9c7c66069239",
     port = 5432
 )
 cur = conn.cursor()
