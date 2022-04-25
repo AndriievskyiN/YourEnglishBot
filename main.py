@@ -5,13 +5,22 @@ import requests
 
 
 # SETTING UP DATABASES
-conn = psycopg2.connect(
+'''conn = psycopg2.connect(
     host = "ec2-54-80-122-11.compute-1.amazonaws.com",
     dbname = "d42figpgm7dkp8",
     user = "nkcldgoavhrunf",
     password = "08cccad3c70a701ff647b89f5fa8e7c37f53302a9814ad5a5e5f9c7c66069239",
     port = 5432
+)'''
+
+conn = psycopg2.connect(
+    host = "localhost",
+    dbname = "postgres",
+    user = "andriievskyi",
+    password = "Kakady33dyno",
+    port = 5432
 )
+
 cur = conn.cursor()
 # PRE-BUILT INPUTS
 hi_eng = ["hi", "hello", "what's up?", "what is up", "what's up", "what is up?", "hello there", "sup", "whassup", "wha sup", "hi there", "hey"]
