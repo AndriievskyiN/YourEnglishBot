@@ -132,6 +132,7 @@ async def welcome(message: types.Message):
 # MANAGING START LANGUAGE COMMAND
 @dp.callback_query_handler(text=["engstart", "ukrstart", "rustart"])
 async def start_language(call: types.CallbackQuery):
+    await call.message.delete()
     cur.execute('''UPDATE Users 
                 SET lang = %s 
                     WHERE id = %s''', (call.data[:-5],call.from_user.id))
