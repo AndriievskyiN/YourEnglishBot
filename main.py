@@ -31,6 +31,12 @@ ukrainian = InlineKeyboardButton(text="🇺🇦Українська🇺🇦", ca
 ru = InlineKeyboardButton(text="русский", callback_data="ru")
 langKeyboard = InlineKeyboardMarkup().add(english).add(ukrainian).add(ru)
 
+# LANGUAGE BUTTONS FOR THE START COMMAND
+englishs = InlineKeyboardButton(text="🇺🇸English🇺🇸", callback_data="engstart")
+ukrainians = InlineKeyboardButton(text="🇺🇦Українська🇺🇦", callback_data="ukrstart")
+rus = InlineKeyboardButton(text="русский", callback_data="rustart")
+langKeyboardStart = InlineKeyboardMarkup().add(englishs).add(ukrainians).add(rus)
+
 # GET BACK BUTTON
 gbeng = InlineKeyboardButton(text="⬅️Go Back", callback_data="gback")
 gbukr = InlineKeyboardButton(text="⬅️Повернутися", callback_data="gback")
@@ -106,13 +112,13 @@ async def welcome(message: types.Message):
 
     else:
         if lang == "eng":
-            await message.answer(f"Hello {firstName.capitalize()}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters type /help")
+            await message.answer(f"Hello {firstName.capitalize()}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nSelect your preferred language", reply_markup=langKeyboardStart)
         elif lang == "ukr":
-            await message.answer(f"Привіт {firstName.capitalize()}!\nЯ твій English Bro Bot 🤖 \nЯк ся маєш? \nДля початку введи /help")
+            await message.answer(f"Привіт {firstName.capitalize()}!\nЯ твій English Bro Bot 🤖 \nЯк ся маєш? \nВиберіть бажану мову", reply_markup=langKeyboardStart)
         elif lang == "ru":
-            await message.answer(f"Привет {firstName.capitalize()}!\nЯ твой English Bro Bot 🤖\nКак дела? \nДля начала нажми /help")
+            await message.answer(f"Привет {firstName.capitalize()}!\nЯ твой English Bro Bot 🤖\nКак дела? \nВыберите предпочитаемый язык", reply_markup=langKeyboardStart)
         else:
-            await message.answer(f"Hello {firstName.capitalize()}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nFor starters /help")
+            await message.answer(f"Hello {firstName.capitalize()}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nSelect your preferred language", reply_markup=langKeyboardStart)
 
     cur.execute('''INSERT INTO USERS ("id","firstName", "lastName", "lang")
                     VALUES (%s,%s,%s,%s)
@@ -121,6 +127,17 @@ async def welcome(message: types.Message):
                             SET "firstName" = EXCLUDED."firstName",
                                 "lastName" = EXCLUDED."lastName" ''',(message.from_user.id,firstName,lastName, "eng"))
     conn.commit()
+
+
+# MANAGING START LANGUAGE COMMAND
+@dp.callback_query_handler(text=["engstart", "ukrstart", "rustart"])
+async def start_language(call: types.CallbackQuery):
+    cur.execute('''UPDATE Users 
+                SET lang = %s 
+                    WHERE id = %s''', (call.data[:-5],call.from_user.id))
+    conn.commit()
+    
+    await call.message.answer(responses("help_command", call.from_user.id))
 
 # LANG COMMAND
 @dp.message_handler(commands=["lang"])
