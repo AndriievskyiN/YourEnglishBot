@@ -1,7 +1,9 @@
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import psycopg2
+
 import requests
+import time
 
 
 # SETTING UP DATABASES
@@ -480,7 +482,17 @@ async def sasha_command(message: types.Message):
 @dp.message_handler(commands=["adel"])
 async def sasha_command(message: types.Message):
     if message.from_user.id == 579467950 or message.from_user.id == 649524636:
+        await message.answer_photo("https://lh3.googleusercontent.com/b9c8mhL0QbcvCRcapHAVMHDytcbLWko8Tz4eg6zYynUIakkLYUnsxUb2q1cse5tk8V8V0NXVMu0jGi7Q0ILD_CHn3ZYOWGlfUSOpbc4NH0u9m1MhnKh1SRYqfOz-aCFZzDTFIlWmO5WtTYIdIs2STGlvCJRoPA53DQ8h1ltv7eEeL6qxf0qHFPZwAIU75PlPF1tWf5y4yk0J714M8cIMpbAizPBo3k18vOilKCXrF3gmPDoDdbldho6iMn3r77CVmOv9_SA7OXkK7I0C3AFw6lR5FRgN8UPxZo-PUkanE3UTs9rEe9KeheqS63Ebq6mrPxE67BvS1TDn3NsBEjURDAx8p1Q3zDc9gFfnHITUWLpOZoFfCqD4ltM-IFKM835dob3Ab9t4FG5xG6n1rNXf03xqQ1YtxLW92JO2t3wJgKUE1noLNV5EJt5hvjF-7FPHpEfwltQVuUXlUTzn2N57ymi_cV5GRzo9D78wZZ3uhkWmkzGYZRln4lTr0v6ttR8Q305HgBTR7YZh9HWQndNvzNFifXSENQPZ0bbcBOeKMB-UrmElUXWjeMuGfT5ZumfQ09NpFph3IBeTBnKlElYOKhXuMIv-PFNZY-B70O7HNIy6Nlfjuba-2e4BId3A3hk_c40d0uPsra0eq43j4_0K0GIu3s7Lt-Ebk7UVQ7VMKqGykf91Ocr0RXN95DzP00I0XSV6aosafgomhjGwKxR63TXtGPol1rQ9Q3RPGtX61TT0SbNNE1AHxrtXMzcqiUzitL6kCkS9A6-Lh0QZvwOIMESO9_Wu7-v6Fxd3pA=w328-h437-no?authuser=0")
+        await message.answer("Это конечно🔥🔥🔥 НООО")
+        time.sleep(1)
+        await message.answer("3️⃣")
+        time.sleep(1)
+        await message.answer("2️⃣")
+        time.sleep(1)
+        await message.answer("1️⃣")
+        time.sleep(1)
         await message.answer_photo("https://lh3.googleusercontent.com/pvWne6nZ2Spce0NpdJMa_C7iRaEXH8Hcs9a61ooIzArh0OSLP06t49kx2Tvhb9fVBcMFSOjrMKqLu7hxX1bVeCK8ucqD70ia_F5fgl_aR3JIiMTOIOq896Sl0YwzvvIJ1EwKvOwrr3DWZiXZUgMkeA351Hz6uYmB_hVbSB6CcP8ERrN1qU4gm8Sgp8xYT9z2-W6sNL7BULwoUuWq3a97QPnLs5nZN-vZbIHXjmkxpYmeREQzrfGbjQ-Xc76HtE3qFx4JOZRKYv8e6c6u3E4b2_ypd6H4fk95kMjZzsbm5ao6Jtj7H73GR0NnHEELtJ-W-27RBxrOLHIh2X_oZeclO3BFRULoI2r2SYRY7sxwTOIWCh-iRw2BZaQsQANpdJTOnEpUutRv1w1ie7GFbjEtdZef0i4ieoD24MHTq-bbFfxZrTtyF998A5lPEezwdyOKrNWaMpWVJ7m8uIIIT83makaK3_nnxkMA55jERzuxKHJU6SBIO7hMdSnEW7bTQSii1zGCPPhz3gi1iQM4W_qqOktR-hi6-HDj5QIvImXVJjP1lZxEcXTu64B4qW2sXPaCa0Gx80f9V06XhAjaQ6aA7fs0cI5Uf68AaNjefZn2QOwUQJJnLuJWOuAjDfBl5o-V5Gx_mTtLOuJYkV-5iOXnKBIMH2fYGxwakfiHp63Tqar-xtrAPyLqCqq2Tt-vyzRZ8P7VOPKk8DkZzM83FkqoFnFQnOHqq5HDwd_uB39IRyAdDZYrgyyNM2D6iy0lpNOyDt52i6Upge4jKprK_d0ZiZl0B2tNxk1U7qjkKg=w720-h1280-no?authuser=0")
+        await message.answer("Но это просто 😍😍😍")
     else:
         await message.answer(responses(message.text, message.from_user.id))
 
