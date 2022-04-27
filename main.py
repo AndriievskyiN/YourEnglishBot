@@ -112,13 +112,13 @@ async def welcome(message: types.Message):
 
     else:
         if lang == "eng":
-            await message.answer(f"Hello {firstName.capitalize()}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nSelect your preferred language", reply_markup=langKeyboardStart)
+            await message.answer(f"Hello {firstName.capitalize()}!\nI'm Your English Bro Bot 🤖\nWhat's up? \n\nSelect your preferred language", reply_markup=langKeyboardStart)
         elif lang == "ukr":
-            await message.answer(f"Привіт {firstName.capitalize()}!\nЯ твій English Bro Bot 🤖 \nЯк ся маєш? \nВиберіть бажану мову", reply_markup=langKeyboardStart)
+            await message.answer(f"Привіт {firstName.capitalize()}!\nЯ твій English Bro Bot 🤖 \nЯк ся маєш? \n\nВиберіть бажану мову", reply_markup=langKeyboardStart)
         elif lang == "ru":
-            await message.answer(f"Привет {firstName.capitalize()}!\nЯ твой English Bro Bot 🤖\nКак дела? \nВыберите предпочитаемый язык", reply_markup=langKeyboardStart)
+            await message.answer(f"Привет {firstName.capitalize()}!\nЯ твой English Bro Bot 🤖\nКак дела? \n\nВыберите предпочитаемый язык", reply_markup=langKeyboardStart)
         else:
-            await message.answer(f"Hello {firstName.capitalize()}!\nI'm Your English Bro Bot 🤖\nWhat's up? \nSelect your preferred language", reply_markup=langKeyboardStart)
+            await message.answer(f"Hello {firstName.capitalize()}!\nI'm Your English Bro Bot 🤖\nWhat's up? \n\nSelect your preferred language", reply_markup=langKeyboardStart)
 
     cur.execute('''INSERT INTO USERS ("id","firstName", "lastName", "lang")
                     VALUES (%s,%s,%s,%s)
@@ -259,6 +259,7 @@ async def chooseGroup(call: types.CallbackQuery):
 @dp.message_handler(commands=["cancel"])
 async def cancel(message: types.Message):
     await message.answer(responses("cancel_command", message.from_user.id))
+
 # TEST
 @dp.message_handler(commands=["test"])
 async def cancel(message: types.Message):
@@ -266,7 +267,7 @@ async def cancel(message: types.Message):
         cur.execute('''SELECT * FROM Users''')
         users = cur.fetchall()
         for i in users:
-            await message.answer(i)
+            await message.answer(str(i))
     else: 
         await message.answer(responses(message.text, message.from_user.id))
 
@@ -474,6 +475,15 @@ async def sasha_command(message: types.Message):
         await message.answer_photo("https://lh3.googleusercontent.com/ExaJRWmGiRTbcOG428B3-mAW49Q3iJl2lgwxIzyVHucDpwk3lsLtariDFAd3kgXZ4pWqqpRSRMwukHHyQ0HKp1c6OH35DvOnBSuqh7Htzn7F1JlgsLwA4pFwQr7Vc9-BWCZFkIe7MWvgNzjkPD0R_PC4hfRwG05X8n1PY1f7Oh-X0BwIw1_JMEzycFNYErkexG71hPCGKjZuyJXIGCNZyU87UHUcmMO2lV12owrN8v2BitH-TlQ3jYwYZGxtQcDAk3vLsewJxAmUE1vaghRFBYZhXmIkrDT3HIDP1iuyLVv-NWK5TOWj6rQujuUWOQVtIzMT-My7XSnhtSg_-veEWv0CiHAl8PI_gFyPpcje5_GYvnHHPFH_wb6uCeOKt0AgOunXW2HOxdMuV3pZtIszRn6f4PJ-OqJ6izqeUTpUQKFn4lhig-yJHgXJxdJwqooOekLBJxX11OGquiEKpcF4OIPu7fdMvTwr-HAdS5sypykn4V0V4wD1Ajz8OQHRaienFXo73bAS1AAUDaBY5hhZG0w9v4_oLV1-6zbePBS01CSh1oZJOQ3kaIErcBoOLxfSm-W9Z339Q_4VDJpyQ9f043CELDkubeBhabJLmWT6mReHyrLUfFMzoqeeFkB8EQliJdQv1IXZObpX-cXmvKctklFA8PuCXvNJp2Iu-AIXxdrh95Af7glMCOyO_ygAPSrxcGobE3fhncsyQk7uVdHJtaOa8wDtAuNvyX4W6eRGcUiH4l_uMXWiIzqQO-Lsks5v6fqLQ3S3sr0Dyy7Pl-SZBxslttM1XBBc4JkBMQ=w614-h1280-no?authuser=0")
     else:
         await message.answer(responses(message.text, message.from_user.id))
+
+#SPECIAL COMMAND FOR ADEL
+@dp.message_handler(commands=["adel"])
+async def sasha_command(message: types.Message):
+    if message.from_user.id == 579467950 or message.from_user.id == 520818378:
+        await message.answer_photo("https://lh3.googleusercontent.com/pvWne6nZ2Spce0NpdJMa_C7iRaEXH8Hcs9a61ooIzArh0OSLP06t49kx2Tvhb9fVBcMFSOjrMKqLu7hxX1bVeCK8ucqD70ia_F5fgl_aR3JIiMTOIOq896Sl0YwzvvIJ1EwKvOwrr3DWZiXZUgMkeA351Hz6uYmB_hVbSB6CcP8ERrN1qU4gm8Sgp8xYT9z2-W6sNL7BULwoUuWq3a97QPnLs5nZN-vZbIHXjmkxpYmeREQzrfGbjQ-Xc76HtE3qFx4JOZRKYv8e6c6u3E4b2_ypd6H4fk95kMjZzsbm5ao6Jtj7H73GR0NnHEELtJ-W-27RBxrOLHIh2X_oZeclO3BFRULoI2r2SYRY7sxwTOIWCh-iRw2BZaQsQANpdJTOnEpUutRv1w1ie7GFbjEtdZef0i4ieoD24MHTq-bbFfxZrTtyF998A5lPEezwdyOKrNWaMpWVJ7m8uIIIT83makaK3_nnxkMA55jERzuxKHJU6SBIO7hMdSnEW7bTQSii1zGCPPhz3gi1iQM4W_qqOktR-hi6-HDj5QIvImXVJjP1lZxEcXTu64B4qW2sXPaCa0Gx80f9V06XhAjaQ6aA7fs0cI5Uf68AaNjefZn2QOwUQJJnLuJWOuAjDfBl5o-V5Gx_mTtLOuJYkV-5iOXnKBIMH2fYGxwakfiHp63Tqar-xtrAPyLqCqq2Tt-vyzRZ8P7VOPKk8DkZzM83FkqoFnFQnOHqq5HDwd_uB39IRyAdDZYrgyyNM2D6iy0lpNOyDt52i6Upge4jKprK_d0ZiZl0B2tNxk1U7qjkKg=w720-h1280-no?authuser=0")
+    else:
+        await message.answer(responses(message.text, message.from_user.id))
+
 # MANAGING REGULAR MESSAGES AND SPECIAL COMMANDS
 @dp.message_handler()
 async def messages(message: types.Message):
