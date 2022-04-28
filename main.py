@@ -672,7 +672,6 @@ async def uSure(call: types.CallbackQuery):
                     class_taken = i
                 await call.message.delete()
                 await call.message.answer(replyVyacheslav("daytaken", call.from_user.id, class_taken[0], class_taken[1]))
-                #return valid_or_not, class_taken
             else:
                 try:
                     if len(group_message) == 6:
@@ -720,7 +719,7 @@ async def uSure(call: types.CallbackQuery):
             cur.execute('''SELECT "group_type" FROM GROUPS WHERE "group_id" = %s''',(group_id,))
             group_type = cur.fetchone()[0]
             message = replyVyacheslav("new_student_group", 467337605, new_user, group_type)
-            requests.post(f"https://api.telegram.org/bot5108593896:AAFrhYyfeqXLolGlyzOqNgxysSJwfg578-0/sendMessage?chat_id=579467950&text={message}")
+            requests.post(f"https://api.telegram.org/bot5108593896:AAFrhYyfeqXLolGlyzOqNgxysSJwfg578-0/sendMessage?chat_id=467337605&text={message}")
 
     elif call.data == "yesgd":
 
