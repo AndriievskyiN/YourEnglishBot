@@ -8,10 +8,10 @@ import time
 
 # SETTING UP DATABASES
 conn = psycopg2.connect(
-    host = "ec2-54-80-122-11.compute-1.amazonaws.com",
-    dbname = "d42figpgm7dkp8",
-    user = "nkcldgoavhrunf",
-    password = "08cccad3c70a701ff647b89f5fa8e7c37f53302a9814ad5a5e5f9c7c66069239",
+    host = "ec2-34-201-95-176.compute-1.amazonaws.com",
+    dbname = "d35deuvndgcs33",
+    user = "gutdihxtsrwujd",
+    password = "3d6b84eb134270e5d91100bdb98daf122e7fd43d9b67ad7299ce58ca408715cd",
     port = 5432
 )
 
