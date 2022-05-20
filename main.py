@@ -5,14 +5,17 @@ import psycopg2
 import requests
 import time
 
+from hidden.token import TOKEN
+from hidden.db_connection import *
+
 
 # SETTING UP DATABASES
 conn = psycopg2.connect(
-    host = "ec2-34-201-95-176.compute-1.amazonaws.com",
-    dbname = "d35deuvndgcs33",
-    user = "gutdihxtsrwujd",
-    password = "3d6b84eb134270e5d91100bdb98daf122e7fd43d9b67ad7299ce58ca408715cd",
-    port = 5432
+    host = host,
+    dbname = dbname,
+    user = user,
+    password = password,
+    port = port
 )
 
 cur = conn.cursor()
@@ -22,7 +25,7 @@ hi_ukr = ["привіт", "хей", "добрий день"]
 hi_ru = ["привет", "хей", "хай", "добрый день"]
 
 # SETTING UP THE BOT
-API_TOKEN = '5108593896:AAFrhYyfeqXLolGlyzOqNgxysSJwfg578-0'
+API_TOKEN = TOKEN
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
